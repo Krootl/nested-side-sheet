@@ -1,0 +1,10 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    avoid_print: true
+    always_use_package_imports: true
+    always_declare_return_types: true
+    join_return_with_assignment: true
+    prefer_expression_function_bodies: true
+    depend_on_referenced_packages: false

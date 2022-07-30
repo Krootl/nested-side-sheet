@@ -1,0 +1,17 @@
+name: krootl_flutter_side_menu
+description: Flutter package which provides a side_menu with inner navigation
+version: 0.0.1
+#homepage:
+
+environment:
+  sdk: ">=2.17.1 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
