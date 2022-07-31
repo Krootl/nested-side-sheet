@@ -8,29 +8,19 @@ import 'package:krootl_flutter_side_menu/src/side_sheet_entry.dart';
 const _kDefaultSideSheetWidth = 376.0;
 
 /// default animation duration of show/hide a sideSheet
-const _kDefaultSideSheetAnimationDuration = Duration(milliseconds: 300);
-
-/// default animation duration of scrimColor
-const _kDefaultScrimColorAnimationDuration = Duration(milliseconds: 700);
-
-typedef DecorationWidgetCallback = Widget Function(Widget child);
-
-typedef BuilderCallback = Widget Function(BuildContext context);
+const _kBaseSettleDuration = Duration(milliseconds: 250);
 
 class KrootlSideMenuWidget extends StatefulWidget {
   const KrootlSideMenuWidget({
     Key? key,
     required this.child,
-    this.sideSheetAnimationDuration = _kDefaultSideSheetAnimationDuration,
-    this.scrimColorAnimationDuration = _kDefaultScrimColorAnimationDuration,
+    this.settleDuration = _kBaseSettleDuration,
     this.scrimColor = Colors.black45,
     this.decorationWidget,
   }) : super(key: key);
 
   /// the animation duration of show/hide a sideSheet
-  final Duration sideSheetAnimationDuration;
-  /// the animation duration of scrimColor
-  final Duration scrimColorAnimationDuration;
+  final Duration settleDuration;
 
   final Color scrimColor;
 
@@ -39,7 +29,7 @@ class KrootlSideMenuWidget extends StatefulWidget {
   final Widget child;
 
   /// The decoration widget to paint behind the [child].
-  final DecorationWidgetCallback? decorationWidget;
+  final Widget Function(Widget child)? decorationWidget;
 
   static KrootlSideMenuWidgetState of(BuildContext context) {
     final inheritedElement =
@@ -80,7 +70,7 @@ class KrootlSideMenuWidgetState extends State<KrootlSideMenuWidget> with TickerP
   void initState() {
     _scrimAnimationController = AnimationController(
       vsync: this,
-      duration: widget.scrimColorAnimationDuration,
+      duration: widget.settleDuration,
     );
     _scrimColorAnimation = ColorTween(
       begin: Colors.transparent,
@@ -96,12 +86,12 @@ class KrootlSideMenuWidgetState extends State<KrootlSideMenuWidget> with TickerP
     double? sheetWidth,
   }) async {
     if (!mounted) return null;
-    final completer = Completer<T>();
+    final completer = Completer<T?>();
 
-    final newEntry = SideMenuEntry<T>.createNewElement(
+    final newEntry = SideMenuEntry<T?>.createNewElement(
       name: name,
       tickerProvider: this,
-      animationDuration: widget.sideSheetAnimationDuration,
+      animationDuration: widget.settleDuration,
       sideSheet: sideSheet,
       width: _newEntrySheetWidth(sheetWidth),
       completer: completer,
@@ -123,7 +113,7 @@ class KrootlSideMenuWidgetState extends State<KrootlSideMenuWidget> with TickerP
       final sideSheet = _sideSheetEntry.last;
       sideSheet.animationController.reverse();
 
-      await Future.delayed(widget.sideSheetAnimationDuration);
+      await Future.delayed(widget.settleDuration);
       _removeClearlySideSheet(sideSheet);
       if (_overlayState?.mounted == true) {
         _overlayState?.setState(() {});
@@ -133,7 +123,7 @@ class KrootlSideMenuWidgetState extends State<KrootlSideMenuWidget> with TickerP
     _maybeCloseOverlay();
   }
 
-  Future<T> pushReplace<T>(
+  Future<T?> pushReplace<T>(
     String oldName,
     String newName,
     Widget sideSheet, {
@@ -147,12 +137,12 @@ class KrootlSideMenuWidgetState extends State<KrootlSideMenuWidget> with TickerP
       (element) => element.name == oldName,
     );
     final indexOfOldEntry = _sideSheetEntry.indexOf(oldEntry);
-    final oldCompleter = oldEntry.completer as Completer<T>;
+    final oldCompleter = oldEntry.completer as Completer<T?>;
 
-    final newEntry = SideMenuEntry<T>.createNewElement(
+    final newEntry = SideMenuEntry<T?>.createNewElement(
       name: newName,
       tickerProvider: this,
-      animationDuration: widget.sideSheetAnimationDuration,
+      animationDuration: widget.settleDuration,
       sideSheet: sideSheet,
       width: _newEntrySheetWidth(sheetWidth),
       completer: oldCompleter,
@@ -179,7 +169,7 @@ class KrootlSideMenuWidgetState extends State<KrootlSideMenuWidget> with TickerP
   void _maybeCloseOverlay() async {
     if (_sideSheetEntry.isEmpty) {
       _scrimAnimationController.reverse();
-      await Future.delayed(widget.scrimColorAnimationDuration);
+      await Future.delayed(widget.settleDuration);
       _overlayEntry?.remove();
       _overlayEntry = null;
       _overlayState = null;
