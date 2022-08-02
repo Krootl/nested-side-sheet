@@ -1,5 +1,5 @@
-import 'package:example/view/custom/third_sheet.dart';
-import 'package:example/view/custom_sheet.dart';
+import 'package:example/view/sheets/third_sheet.dart';
+import 'package:example/view/sheets/custom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
 
@@ -37,7 +37,7 @@ class _SecondSheetState extends State<SecondSheet> {
                 final result = await SheetWidget.of(context).pushReplace(
                   ThirdSheet(size: widget.size),
                 );
-                if (result != null) setState(() => textValue = result);
+                if (result is String) textValue = result;
               },
               child: Text('Replace to third sheet'),
             ),

@@ -17,7 +17,7 @@ class SheetEntry<T> {
   final Tween<Offset> tweenTransition;
 
   /// a unique completer for getting a feature result
-  final Completer completer;
+  final Completer<T?> completer;
 
   /// which the side do you want to animate a sheet
   final Alignment alignment;
@@ -38,7 +38,7 @@ class SheetEntry<T> {
     required TickerProvider tickerProvider,
     required Duration animationDuration,
     required Widget sheet,
-    required Completer<T> completer,
+    required Completer<T?> completer,
     required Alignment alignment,
     bool initWidthAnimation = true,
   }) {
@@ -58,7 +58,7 @@ class SheetEntry<T> {
       child: sheet,
     );
 
-    return SheetEntry(
+    return SheetEntry<T>(
       id: uniqueId,
       slidingAnimationWidget: animatedSheet,
       animationController: animationController,

@@ -1,4 +1,4 @@
-import 'package:example/view/custom_sheet.dart';
+import 'package:example/view/sheets/custom_sheet.dart';
 import 'package:flutter/material.dart';
 
 class ThirdSheet extends StatefulWidget {

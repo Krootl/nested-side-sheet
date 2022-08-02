@@ -1,5 +1,5 @@
-import 'package:example/view/custom_sheet.dart';
-import 'package:example/view/custom/second_sheet.dart';
+import 'package:example/view/sheets/custom_sheet.dart';
+import 'package:example/view/sheets/second_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
 
@@ -53,7 +53,7 @@ class _FirstSheetState extends State<FirstSheet> {
                   );
                 }
 
-                if (result != null) setState(() => textValue = result);
+                if (result != null) textValue = result;
               },
               child: Text('Navigate to another sheet'),
             ),

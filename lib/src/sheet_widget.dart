@@ -72,7 +72,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   int get currentStackLength => _sheetEntries.length;
 
   /// add a sheet to the stack of widgets from the left side
-  Future<T?> pushLeft<T>(Widget sideSheet) => push<T>(
+  Future<T?> pushLeft<T extends Object?>(Widget sideSheet) => push<T>(
         sideSheet,
         tweenTransition: Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero),
         alignment: Alignment.centerLeft,
@@ -83,7 +83,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       );
 
   /// add a sheet to the stack of widgets from the right side
-  Future<T?> pushRight<T>(Widget sideSheet) => push<T>(
+  Future<T?> pushRight<T extends Object?>(Widget sideSheet) => push<T>(
         sideSheet,
         tweenTransition: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero),
         alignment: Alignment.centerRight,
@@ -94,7 +94,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       );
 
   /// add a sheet to the stack of widgets from the bottom side
-  Future<T?> pushBottom<T>(Widget sideSheet) => push<T>(
+  Future<T?> pushBottom<T extends Object?>(Widget sideSheet) => push<T>(
         sideSheet,
         tweenTransition: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero),
         alignment: Alignment.bottomCenter,
@@ -105,7 +105,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       );
 
   /// add a sheet to the stack of widgets
-  Future<T?> push<T>(
+  Future<T?> push<T extends Object?>(
     Widget sideSheet, {
     required AnimatedWidget Function(Widget child, Animation<Offset> position) transitionAnimation,
     required Tween<Offset> tweenTransition,
@@ -135,17 +135,25 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   }
 
   /// Close all sheets in the stack
-  void close() async {
+  void close<T extends Object?>([T? result]) async {
+    // find the first completer of the sheet stack and make it as completed
+    // for returning a value to the initial point of sheets
+    final firstCompleter = _sheetEntries.first.completer;
+
     for (final entry in _sheetEntries.reversed.toList()) {
       if (_sheetEntries.last != entry) _removeClearlySheet(entry);
     }
-    _overlayState?.setState(() {});
-    await Future.delayed(const Duration(milliseconds: 18));
-    pop();
+    if (_overlayState?.mounted == true) {
+      _overlayState?.setState(() {});
+    }
+    await Future.delayed(const Duration(milliseconds: 200));
+    _pop<T>(result, firstCompleter);
   }
 
+  void pop<T extends Object?>([T? result]) => _pop<T>(result);
+
   /// Remove the last sheet of the stack
-  void pop<T>([T? result]) async {
+  void _pop<T extends Object?>([T? result, Completer? completer]) async {
     if (_sheetEntries.isNotEmpty) {
       final sideSheet = _sheetEntries.last;
       sideSheet.animationController.reverse();
@@ -155,13 +163,17 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       if (_overlayState?.mounted == true) {
         _overlayState?.setState(() {});
       }
-      sideSheet.completer.complete(result);
+      if (completer != null) {
+        completer.complete(result);
+      } else {
+        sideSheet.completer.complete(result);
+      }
     }
     _maybeCloseOverlay();
   }
 
   /// Replace the last sheet of the stack to the new one
-  Future<T?> pushReplace<T>(
+  Future<T?> pushReplace<T extends Object?>(
     Widget sideSheet, {
     Alignment? alignment,
   }) async {
@@ -181,7 +193,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     );
     _sheetEntries.replaceRange(indexOfOldEntry, indexOfOldEntry + 1, [newEntry]);
 
-    _overlayState?.setState(() {});
+    if (_overlayState?.mounted == true) {
+      _overlayState?.setState(() {});
+    }
     return oldCompleter.future;
   }
 
@@ -194,11 +208,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _overlayEntry?.remove();
       _overlayEntry = null;
       _overlayState = null;
-
-      for (final entry in _sheetEntries) {
-        entry.animationController.dispose();
-      }
-      _sheetEntries.clear();
     }
   }
 
