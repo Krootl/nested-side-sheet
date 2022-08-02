@@ -7,56 +7,14 @@ import 'package:krootl_flutter_side_menu/src/sheet_entry.dart';
 /// default animation duration of showing/hiding a sheet
 const _kBaseSettleDuration = Duration(milliseconds: 250);
 
-/// Default animation transition
-AnimatedWidget Function(
-  Widget child,
-  Animation<Offset> position,
-) get _kDefaultAnimatedWidget =>
-    (child, position) => SlideTransition(position: position, child: child);
-
-final _kDefaultTween = Tween<Offset>(
-  begin: const Offset(1, 0),
-  end: Offset.zero,
-);
-
 class SheetWidget extends StatefulWidget {
-  const SheetWidget._({
+  const SheetWidget({
     Key? key,
     required this.child,
-    required this.defaultAlignment,
-    required this.settleDuration,
-    required this.scrimColor,
-    required this.decorationWidget,
-    required this.defaultTween,
-    required this.defaultAnimatedWidget,
+    this.settleDuration = _kBaseSettleDuration,
+    this.scrimColor = Colors.black45,
+    this.decorationWidget,
   }) : super(key: key);
-
-  factory SheetWidget({
-    required Widget child,
-    Alignment defaultAlignment = Alignment.centerRight,
-    Tween<Offset>? defaultTween,
-    Duration? settleDuration,
-    Color scrimColor = Colors.black45,
-    Widget Function(Widget child)? decorationWidget,
-    AnimatedWidget Function(Widget child, Animation<Offset> position)? defaultAnimatedWidget,
-  }) =>
-      SheetWidget._(
-        defaultAnimatedWidget: defaultAnimatedWidget ?? _kDefaultAnimatedWidget,
-        defaultAlignment: defaultAlignment,
-        defaultTween: defaultTween ?? _kDefaultTween,
-        settleDuration: settleDuration ?? _kBaseSettleDuration,
-        decorationWidget: decorationWidget,
-        scrimColor: scrimColor,
-        child: child,
-      );
-
-  final AnimatedWidget Function(Widget child, Animation<Offset> position) defaultAnimatedWidget;
-
-  final Tween<Offset> defaultTween;
-
-  /// which the side do you want to animate a sheet
-  /// you can choose another value for specific view in [SheetWidget.of(context).push]
-  final Alignment defaultAlignment;
 
   /// the animation duration of showing/hiding a sheet
   final Duration settleDuration;
@@ -111,17 +69,50 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     super.initState();
   }
 
+  int get currentStackLength => _sheetEntries.length;
+
+  /// add a sheet to the stack of widgets from the left side
+  Future<T?> pushLeft<T>(Widget sideSheet) => push<T>(
+        sideSheet,
+        tweenTransition: Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero),
+        alignment: Alignment.centerLeft,
+        transitionAnimation: (child, animation) => SlideTransition(
+          position: animation,
+          child: child,
+        ),
+      );
+
+  /// add a sheet to the stack of widgets from the right side
+  Future<T?> pushRight<T>(Widget sideSheet) => push<T>(
+        sideSheet,
+        tweenTransition: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero),
+        alignment: Alignment.centerRight,
+        transitionAnimation: (child, animation) => SlideTransition(
+          position: animation,
+          child: child,
+        ),
+      );
+
+  /// add a sheet to the stack of widgets from the bottom side
+  Future<T?> pushBottom<T>(Widget sideSheet) => push<T>(
+        sideSheet,
+        tweenTransition: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero),
+        alignment: Alignment.bottomCenter,
+        transitionAnimation: (child, animation) => SlideTransition(
+          position: animation,
+          child: child,
+        ),
+      );
+
   /// add a sheet to the stack of widgets
   Future<T?> push<T>(
     Widget sideSheet, {
-    AnimatedWidget Function(Widget child, Animation<Offset> position)? transitionAnimation,
-    Tween<Offset>? tweenTransition,
-    Alignment? alignment,
+    required AnimatedWidget Function(Widget child, Animation<Offset> position) transitionAnimation,
+    required Tween<Offset> tweenTransition,
+    required Alignment alignment,
   }) async {
     if (!mounted) return null;
     final completer = Completer<T?>();
-
-    transitionAnimation ??= widget.defaultAnimatedWidget;
 
     final newEntry = SheetEntry<T?>.createNewElement(
       transitionAnimation: transitionAnimation,
@@ -129,8 +120,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       sheet: sideSheet,
       completer: completer,
       animationDuration: widget.settleDuration,
-      alignment: alignment ?? widget.defaultAlignment,
-      tweenTransition: tweenTransition ?? widget.defaultTween,
+      alignment: alignment,
+      tweenTransition: tweenTransition,
     );
     _sheetEntries.add(newEntry);
 
@@ -195,7 +186,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   }
 
   /// if there is the last one of the sheet,
-  /// the overlay has to be closed after pop upping after the last one
+  /// the overlay has to be closed after pop upping the last one
   void _maybeCloseOverlay() async {
     if (_sheetEntries.isEmpty) {
       _scrimAnimationController.reverse();
