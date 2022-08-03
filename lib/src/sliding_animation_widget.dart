@@ -4,6 +4,7 @@ import 'package:krootl_flutter_side_menu/src/measure_size.dart';
 class SlidingAnimationWidget extends StatefulWidget {
   final Widget child;
 
+  /// usage: when you replace sheet, an animation of showing is an unnecessary
   final bool initWithAnimation;
 
   final AnimationController animationController;
@@ -11,17 +12,14 @@ class SlidingAnimationWidget extends StatefulWidget {
   /// custom animation transition
   final AnimatedWidget Function(
     Widget child,
-    Animation<Offset> position,
+    Animation<double> animation,
   ) transitionAnimation;
-
-  final Tween<Offset> tweenTransition;
 
   const SlidingAnimationWidget({
     Key? key,
     required this.child,
     required this.animationController,
-    this.initWithAnimation = true,
-    required this.tweenTransition,
+    required this.initWithAnimation,
     required this.transitionAnimation,
   }) : super(key: key);
 
@@ -33,17 +31,15 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
     with TickerProviderStateMixin {
   Size? sheetSize;
 
-  late final AnimationController _animationController;
-  late Animation<Offset> _animationSlide;
+  late final AnimationController animationController;
+  late Animation<double> animation;
 
   @override
   void initState() {
-    _animationController = widget.animationController;
+    animationController = widget.animationController;
     super.initState();
 
-    _animationSlide = getTween(widget.initWithAnimation).animate(
-      _animationController,
-    );
+    animation = ProxyAnimation(animationController);
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) async {
@@ -52,29 +48,18 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
     );
   }
 
-  Tween<Offset> getTween(bool withAnimation) {
-    final tween = widget.tweenTransition;
-    return withAnimation
-        ? tween
-        : Tween<Offset>(
-            begin: tween.end,
-            end: Offset.zero,
-          );
-  }
-
   void animate() async {
-    await _animationController.forward();
-    if (_animationController.isCompleted) {
-      _animationSlide = getTween(true).animate(
-        _animationController,
-      );
+    if (widget.initWithAnimation) {
+      await animationController.forward();
+    } else {
+      animationController.value = 1;
     }
   }
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
-        animation: _animationSlide,
-        builder: (context, child) => widget.transitionAnimation(child!, _animationSlide),
+        animation: animation,
+        builder: (context, child) => widget.transitionAnimation(child!, animation),
         child: SizedBox(
           width: sheetSize?.width,
           height: sheetSize?.height,

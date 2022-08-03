@@ -35,49 +35,60 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(widget.title)),
-        body: Center(
-          child: Container(
-            width: 200,
-            height: 300,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (value != null) ...[
-                  Text(value!, textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                ],
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        body: Stack(
+          children: [
+            Center(
+              child: Container(
+                width: 300,
+                height: 300,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    FloatingActionButton(
-                      onPressed: onLeftButton,
-                      child: Icon(Icons.arrow_back_rounded),
+                    if (value != null) ...[
+                      Text(value!, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                    ],
+                    Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: TextButton(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text('Sheet with custom transition', textAlign: TextAlign.center),
+                        ),
+                        onPressed: onBottomCustomAnimation,
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        FloatingActionButton(
+                          onPressed: onLeftButton,
+                          child: Icon(Icons.arrow_back_rounded),
+                        ),
+                        FloatingActionButton(
+                          onPressed: onRightButton,
+                          child: Icon(Icons.arrow_forward_rounded),
+                        ),
+                      ],
                     ),
                     FloatingActionButton(
-                      onPressed: onRightButton,
-                      child: Icon(Icons.arrow_forward_rounded),
+                      onPressed: onBottomButton,
+                      child: Icon(Icons.arrow_downward_rounded),
                     ),
+                    if (resultOfClosingAllSheets != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        resultOfClosingAllSheets!,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ],
                 ),
-                FloatingActionButton(
-                  onPressed: onBottomButton,
-                  child: Icon(Icons.arrow_downward_rounded),
-                ),
-                if (resultOfClosingAllSheets != null) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    resultOfClosingAllSheets!,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       );
-
-  String explored(String value) =>
-      'You have tested an sheet\'s animation from the $value side of the screen';
 
   void onLeftButton() async {
     final result = await SheetWidget.of(context).pushLeft(
@@ -87,7 +98,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
     setState(() {
-      value = explored('left');
       if (result is String) resultOfClosingAllSheets = result;
     });
   }
@@ -100,7 +110,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
     setState(() {
-      value = explored('right');
       if (result is String) resultOfClosingAllSheets = result;
     });
   }
@@ -113,7 +122,25 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
     setState(() {
-      value = explored('bottom');
+      if (result is String) resultOfClosingAllSheets = result;
+    });
+  }
+
+  void onBottomCustomAnimation() async {
+    final result = await SheetWidget.of(context).push(
+      FirstSheet(
+        size: Size(MediaQuery.of(context).size.width, 400),
+        alignment: Alignment.bottomCenter,
+      ),
+      alignment: Alignment.bottomCenter,
+      transitionAnimation: (child, animation) => SlideTransition(
+        position: animation
+            .drive(CurveTween(curve: Curves.easeOutCubic))
+            .drive(Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)),
+        child: child,
+      ),
+    );
+    setState(() {
       if (result is String) resultOfClosingAllSheets = result;
     });
   }

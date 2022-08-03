@@ -13,8 +13,7 @@ class SheetEntry<T> {
   /// the sheet's controller
   final AnimationController animationController;
 
-  final AnimatedWidget Function(Widget child, Animation<Offset> position) transitionAnimation;
-  final Tween<Offset> tweenTransition;
+  final AnimatedWidget Function(Widget child, Animation<double> position) transitionAnimation;
 
   /// a unique completer for getting a feature result
   final Completer<T?> completer;
@@ -27,14 +26,12 @@ class SheetEntry<T> {
     required this.slidingAnimationWidget,
     required this.animationController,
     required this.completer,
-    required this.tweenTransition,
     required this.transitionAnimation,
     required this.alignment,
   });
 
   factory SheetEntry.createNewElement({
-    required AnimatedWidget Function(Widget child, Animation<Offset> position) transitionAnimation,
-    required Tween<Offset> tweenTransition,
+    required AnimatedWidget Function(Widget child, Animation<double> animation) transitionAnimation,
     required TickerProvider tickerProvider,
     required Duration animationDuration,
     required Widget sheet,
@@ -54,7 +51,6 @@ class SheetEntry<T> {
       transitionAnimation: transitionAnimation,
       animationController: animationController,
       initWithAnimation: initWidthAnimation,
-      tweenTransition: tweenTransition,
       child: sheet,
     );
 
@@ -64,7 +60,6 @@ class SheetEntry<T> {
       animationController: animationController,
       completer: completer,
       transitionAnimation: transitionAnimation,
-      tweenTransition: tweenTransition,
       alignment: alignment,
     );
   }

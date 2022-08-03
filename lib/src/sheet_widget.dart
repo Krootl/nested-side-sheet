@@ -74,10 +74,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   /// add a sheet to the stack of widgets from the left side
   Future<T?> pushLeft<T extends Object?>(Widget sideSheet) => push<T>(
         sideSheet,
-        tweenTransition: Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero),
         alignment: Alignment.centerLeft,
         transitionAnimation: (child, animation) => SlideTransition(
-          position: animation,
+          position: animation.drive(Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero)),
           child: child,
         ),
       );
@@ -85,10 +84,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   /// add a sheet to the stack of widgets from the right side
   Future<T?> pushRight<T extends Object?>(Widget sideSheet) => push<T>(
         sideSheet,
-        tweenTransition: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero),
         alignment: Alignment.centerRight,
         transitionAnimation: (child, animation) => SlideTransition(
-          position: animation,
+          position: animation.drive(Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)),
           child: child,
         ),
       );
@@ -96,10 +94,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   /// add a sheet to the stack of widgets from the bottom side
   Future<T?> pushBottom<T extends Object?>(Widget sideSheet) => push<T>(
         sideSheet,
-        tweenTransition: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero),
         alignment: Alignment.bottomCenter,
         transitionAnimation: (child, animation) => SlideTransition(
-          position: animation,
+          position: animation.drive(Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)),
           child: child,
         ),
       );
@@ -107,8 +104,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   /// add a sheet to the stack of widgets
   Future<T?> push<T extends Object?>(
     Widget sideSheet, {
-    required AnimatedWidget Function(Widget child, Animation<Offset> position) transitionAnimation,
-    required Tween<Offset> tweenTransition,
+    required AnimatedWidget Function(Widget child, Animation<double> position) transitionAnimation,
     required Alignment alignment,
   }) async {
     if (!mounted) return null;
@@ -121,7 +117,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       completer: completer,
       animationDuration: widget.settleDuration,
       alignment: alignment,
-      tweenTransition: tweenTransition,
     );
     _sheetEntries.add(newEntry);
 
@@ -188,7 +183,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       completer: oldCompleter,
       initWidthAnimation: false,
       transitionAnimation: oldEntry.transitionAnimation,
-      tweenTransition: oldEntry.tweenTransition,
       alignment: alignment ?? oldEntry.alignment,
     );
     _sheetEntries.replaceRange(indexOfOldEntry, indexOfOldEntry + 1, [newEntry]);
@@ -245,7 +239,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   Widget _overlayContent(BuildContext context) => Stack(
         children: [
           Positioned.fill(
-            child: GestureDetector(onTap: () => close()),
+            child: GestureDetector(onTap: close),
           ),
           ..._sheetEntries.map((e) {
             final ignore = e != _sheetEntries.last;
