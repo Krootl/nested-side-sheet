@@ -1,3 +1,4 @@
+import 'package:example/view/navigate_to.dart';
 import 'package:example/view/sheets/custom_sheet.dart';
 import 'package:example/view/sheets/second_sheet.dart';
 import 'package:flutter/material.dart';
@@ -34,10 +35,11 @@ class _FirstSheetState extends State<FirstSheet> {
             ),
             TextButton(
               onPressed: () async {
-                String? result;
+                dynamic result;
 
                 if (widget.alignment == Alignment.centerLeft) {
-                  result = await SheetWidget.of(context).pushLeft(
+                  result = await NavigateTo.pushLeft(
+                    context,
                     SecondSheet(size: widget.size, alignment: widget.alignment),
                   );
                 }
@@ -48,12 +50,13 @@ class _FirstSheetState extends State<FirstSheet> {
                 }
 
                 if (widget.alignment == Alignment.bottomCenter) {
-                  result = await SheetWidget.of(context).pushBottom(
+                  result = await NavigateTo.pushBottom(
+                    context,
                     SecondSheet(size: widget.size, alignment: widget.alignment),
                   );
                 }
 
-                if (result != null) textValue = result;
+                if (result is String) textValue = result;
               },
               child: Text('Navigate to another sheet'),
             ),

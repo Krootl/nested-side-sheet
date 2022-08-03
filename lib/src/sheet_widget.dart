@@ -71,16 +71,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   int get currentStackLength => _sheetEntries.length;
 
-  /// add a sheet to the stack of widgets from the left side
-  Future<T?> pushLeft<T extends Object?>(Widget sideSheet) => push<T>(
-        sideSheet,
-        alignment: Alignment.centerLeft,
-        transitionAnimation: (child, animation) => SlideTransition(
-          position: animation.drive(Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero)),
-          child: child,
-        ),
-      );
-
   /// add a sheet to the stack of widgets from the right side
   Future<T?> pushRight<T extends Object?>(Widget sideSheet) => push<T>(
         sideSheet,
@@ -91,17 +81,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
         ),
       );
 
-  /// add a sheet to the stack of widgets from the bottom side
-  Future<T?> pushBottom<T extends Object?>(Widget sideSheet) => push<T>(
-        sideSheet,
-        alignment: Alignment.bottomCenter,
-        transitionAnimation: (child, animation) => SlideTransition(
-          position: animation.drive(Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)),
-          child: child,
-        ),
-      );
-
-  /// add a sheet to the stack of widgets
+  /// add a sheet to the stack of widgets with custom transition
   Future<T?> push<T extends Object?>(
     Widget sideSheet, {
     required AnimatedWidget Function(Widget child, Animation<double> position) transitionAnimation,

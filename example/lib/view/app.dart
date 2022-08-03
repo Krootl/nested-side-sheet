@@ -1,3 +1,4 @@
+import 'package:example/view/navigate_to.dart';
 import 'package:example/view/sheets/first_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
@@ -48,16 +49,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       Text(value!, textAlign: TextAlign.center),
                       const SizedBox(height: 16),
                     ],
-                    Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: TextButton(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text('Sheet with custom transition', textAlign: TextAlign.center),
-                        ),
-                        onPressed: onBottomCustomAnimation,
-                      ),
-                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -72,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ),
                     FloatingActionButton(
-                      onPressed: onBottomButton,
+                      onPressed: onBottomCustomAnimation,
                       child: Icon(Icons.arrow_downward_rounded),
                     ),
                     if (resultOfClosingAllSheets != null) ...[
@@ -91,7 +82,8 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
   void onLeftButton() async {
-    final result = await SheetWidget.of(context).pushLeft(
+    final result = await NavigateTo.pushLeft(
+      context,
       FirstSheet(
         size: const Size(376, double.infinity),
         alignment: Alignment.centerLeft,
@@ -114,30 +106,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void onBottomButton() async {
-    final result = await SheetWidget.of(context).pushBottom(
-      FirstSheet(
-        size: Size(MediaQuery.of(context).size.width, 400),
-        alignment: Alignment.bottomCenter,
-      ),
-    );
-    setState(() {
-      if (result is String) resultOfClosingAllSheets = result;
-    });
-  }
-
   void onBottomCustomAnimation() async {
-    final result = await SheetWidget.of(context).push(
+    final result = await NavigateTo.pushBottom(
+      context,
       FirstSheet(
         size: Size(MediaQuery.of(context).size.width, 400),
         alignment: Alignment.bottomCenter,
-      ),
-      alignment: Alignment.bottomCenter,
-      transitionAnimation: (child, animation) => SlideTransition(
-        position: animation
-            .drive(CurveTween(curve: Curves.easeOutCubic))
-            .drive(Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)),
-        child: child,
       ),
     );
     setState(() {
