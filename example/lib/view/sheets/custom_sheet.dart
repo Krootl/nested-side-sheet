@@ -47,7 +47,7 @@ class CustomSheet extends StatelessWidget {
               child: Icon(Icons.arrow_back_rounded),
             ),
             Text(value),
-            if (SheetWidget.of(context).currentStackLength > 1)
+            if (SheetWidget.of(context).currentSheetLength > 1)
               FloatingActionButton.small(
                 onPressed: () => SheetWidget.of(context).close('Close all sheets from $value'),
                 tooltip: 'Popup from all sheets in the stack',

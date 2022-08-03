@@ -23,7 +23,7 @@ class SheetWidget extends StatefulWidget {
   final Color scrimColor;
 
   /// wrap your top level widget to the [SheetWidget]
-  /// of your widget tree
+  /// of your widget tree for finding [SheetWidgetState] in the widget's tree
   final Widget child;
 
   /// The decoration widget to paint behind the [sheet's stack].
@@ -49,11 +49,16 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   OverlayEntry? _overlayEntry;
   OverlayState? _overlayState;
 
+  /// for preventing unnecessary touches
+  bool get _blockTouches => _sheetEntries.any(
+        (element) => !element.animationController.isCompleted,
+      );
+
   /// background color
   late AnimationController _scrimAnimationController;
   late Animation<Color?> _scrimColorAnimation;
 
-  /// the list of sideSheets
+  /// the list of sheets
   final _sheetEntries = <SheetEntry>[];
 
   @override
@@ -69,16 +74,18 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     super.initState();
   }
 
-  int get currentStackLength => _sheetEntries.length;
+  /// current length of the sheet entries in the stack
+  int get currentSheetLength => _sheetEntries.length;
 
   /// add a sheet to the stack of widgets from the right side
-  Future<T?> pushRight<T extends Object?>(Widget sideSheet) => push<T>(
+  Future<T?> pushRight<T extends Object?>(Widget sideSheet, {bool dismissible = true}) => push<T>(
         sideSheet,
         alignment: Alignment.centerRight,
         transitionAnimation: (child, animation) => SlideTransition(
           position: animation.drive(Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)),
           child: child,
         ),
+        dismissible: dismissible,
       );
 
   /// add a sheet to the stack of widgets with custom transition
@@ -86,6 +93,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     Widget sideSheet, {
     required AnimatedWidget Function(Widget child, Animation<double> position) transitionAnimation,
     required Alignment alignment,
+    bool dismissible = true,
   }) async {
     if (!mounted) return null;
     final completer = Completer<T?>();
@@ -97,6 +105,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       completer: completer,
       animationDuration: widget.settleDuration,
       alignment: alignment,
+      dismissible: dismissible,
     );
     _sheetEntries.add(newEntry);
 
@@ -111,6 +120,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   /// Close all sheets in the stack
   void close<T extends Object?>([T? result]) async {
+    if (_blockTouches) return;
+
     // find the first completer of the sheet stack and make it as completed
     // for returning a value to the initial point of sheets
     final firstCompleter = _sheetEntries.first.completer;
@@ -129,6 +140,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   /// Remove the last sheet of the stack
   void _pop<T extends Object?>([T? result, Completer? completer]) async {
+    if (_blockTouches) return;
+
     if (_sheetEntries.isNotEmpty) {
       final sideSheet = _sheetEntries.last;
       sideSheet.animationController.reverse();
@@ -161,9 +174,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       animationDuration: widget.settleDuration,
       sheet: sideSheet,
       completer: oldCompleter,
-      initWidthAnimation: false,
+      initWithAnimation: false,
       transitionAnimation: oldEntry.transitionAnimation,
       alignment: alignment ?? oldEntry.alignment,
+      dismissible: oldEntry.dismissible,
     );
     _sheetEntries.replaceRange(indexOfOldEntry, indexOfOldEntry + 1, [newEntry]);
 
@@ -219,7 +233,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   Widget _overlayContent(BuildContext context) => Stack(
         children: [
           Positioned.fill(
-            child: GestureDetector(onTap: close),
+            child: GestureDetector(
+              onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
+            ),
           ),
           ..._sheetEntries.map((e) {
             final ignore = e != _sheetEntries.last;

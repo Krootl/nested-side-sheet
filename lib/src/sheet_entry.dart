@@ -21,6 +21,8 @@ class SheetEntry<T> {
   /// which the side do you want to animate a sheet
   final Alignment alignment;
 
+  final bool dismissible;
+
   SheetEntry({
     required this.id,
     required this.slidingAnimationWidget,
@@ -28,6 +30,7 @@ class SheetEntry<T> {
     required this.completer,
     required this.transitionAnimation,
     required this.alignment,
+    required this.dismissible,
   });
 
   factory SheetEntry.createNewElement({
@@ -37,7 +40,8 @@ class SheetEntry<T> {
     required Widget sheet,
     required Completer<T?> completer,
     required Alignment alignment,
-    bool initWidthAnimation = true,
+    bool initWithAnimation = true,
+    required bool dismissible,
   }) {
     final uniqueId = UniqueKey().toString();
 
@@ -50,7 +54,7 @@ class SheetEntry<T> {
       key: ValueKey(uniqueId),
       transitionAnimation: transitionAnimation,
       animationController: animationController,
-      initWithAnimation: initWidthAnimation,
+      initWithAnimation: initWithAnimation,
       child: sheet,
     );
 
@@ -61,6 +65,7 @@ class SheetEntry<T> {
       completer: completer,
       transitionAnimation: transitionAnimation,
       alignment: alignment,
+      dismissible: dismissible,
     );
   }
 
