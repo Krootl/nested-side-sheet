@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   /// also, you can set parameter [dismissible] = false, if you want
-  /// to lock closing sheets by tapping on the free space
+  /// to prevent closing sheets by tapping on the free space
   void onRightButton() async {
     final result = await SheetWidget.of(context).pushRight(
       FirstSheet(

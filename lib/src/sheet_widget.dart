@@ -132,7 +132,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     if (_overlayState?.mounted == true) {
       _overlayState?.setState(() {});
     }
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 17));
     _pop<T>(result, firstCompleter);
   }
 
