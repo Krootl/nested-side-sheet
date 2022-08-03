@@ -37,15 +37,9 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
   @override
   void initState() {
     animationController = widget.animationController;
-    super.initState();
-
     animation = ProxyAnimation(animationController);
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async {
-        if (sheetSize != null) animate();
-      },
-    );
+    
+    super.initState();
   }
 
   void animate() async {
@@ -65,7 +59,7 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
           height: sheetSize?.height,
           child: MeasureSize(
             onChange: (size) {
-              setState(() => sheetSize ??= size);
+              setState(() => sheetSize = size);
               animate();
             },
             child: widget.child,
