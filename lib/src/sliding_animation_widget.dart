@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/src/measure_size.dart';
+import 'package:krootl_flutter_side_menu/src/type_defs.dart';
 
 class SlidingAnimationWidget extends StatefulWidget {
+  /// the guest of the program =)
   final Widget child;
 
-  /// usage: when you replace sheet, an animation of showing is an unnecessary
+  /// add a sheet without animation
   final bool initWithAnimation;
 
   final AnimationController animationController;
 
-  /// custom animation transition
-  final AnimatedWidget Function(
-    Widget child,
-    Animation<double> animation,
-  ) transitionAnimation;
+  /// custom animation transition builder
+  final SheetTransitionBuilder transitionBuilder;
 
   const SlidingAnimationWidget({
     Key? key,
     required this.child,
     required this.animationController,
     required this.initWithAnimation,
-    required this.transitionAnimation,
+    required this.transitionBuilder,
   }) : super(key: key);
 
   @override
@@ -53,7 +52,7 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: animation,
-        builder: (context, child) => widget.transitionAnimation(child!, animation),
+        builder: (context, child) => widget.transitionBuilder(child!, animation),
         child: SizedBox(
           width: sheetSize?.width,
           height: sheetSize?.height,

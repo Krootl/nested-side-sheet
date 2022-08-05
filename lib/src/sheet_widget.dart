@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/src/inherited_sheet_data_provider.dart';
 import 'package:krootl_flutter_side_menu/src/sheet_entry.dart';
+import 'package:krootl_flutter_side_menu/src/type_defs.dart';
 
 /// default animation duration of showing/hiding a sheet
 const _kBaseSettleDuration = Duration(milliseconds: 250);
@@ -49,12 +50,12 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   OverlayEntry? _overlayEntry;
   OverlayState? _overlayState;
 
-  /// for preventing unnecessary touches
+  /// prevent unnecessary touches while there is animating
   bool get _blockTouches => _sheetEntries.any(
         (element) => !element.animationController.isCompleted,
       );
 
-  /// background color
+  /// a background color
   late AnimationController _scrimAnimationController;
   late Animation<Color?> _scrimColorAnimation;
 
@@ -74,14 +75,14 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     super.initState();
   }
 
-  /// current length of the sheet entries in the stack
+  /// the current length of the sheet entries in the stack
   int get currentSheetLength => _sheetEntries.length;
 
   /// add a sheet to the stack of widgets from the right side
   Future<T?> pushRight<T extends Object?>(Widget sideSheet, {bool dismissible = true}) => push<T>(
         sideSheet,
         alignment: Alignment.centerRight,
-        transitionAnimation: (child, animation) => SlideTransition(
+        transitionBuilder: (child, animation) => SlideTransition(
           position: animation.drive(Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)),
           child: child,
         ),
@@ -91,7 +92,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   /// add a sheet to the stack of widgets with custom transition
   Future<T?> push<T extends Object?>(
     Widget sideSheet, {
-    required AnimatedWidget Function(Widget child, Animation<double> position) transitionAnimation,
+    required SheetTransitionBuilder transitionBuilder,
     required Alignment alignment,
     bool dismissible = true,
   }) async {
@@ -99,7 +100,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     final completer = Completer<T?>();
 
     final newEntry = SheetEntry<T?>.createNewElement(
-      transitionAnimation: transitionAnimation,
+      transitionBuilder: transitionBuilder,
       tickerProvider: this,
       sheet: sideSheet,
       completer: completer,
@@ -120,6 +121,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   /// Close all sheets in the stack
   void close<T extends Object?>([T? result]) async {
+    assert(
+      _sheetEntries.isNotEmpty,
+      'Nothing to close. Firstly, you need to add the first sheet by the push method',
+    );
     if (_blockTouches) return;
 
     // find the first completer of the sheet stack and make it as completed
@@ -140,6 +145,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   /// Remove the last sheet of the stack
   void _pop<T extends Object?>([T? result, Completer? completer]) async {
+    assert(
+      _sheetEntries.isNotEmpty,
+      'Nothing to pop. Firstly, you need to add the first sheet by the push method',
+    );
     if (_blockTouches) return;
 
     if (_sheetEntries.isNotEmpty) {
@@ -164,9 +173,14 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   Future<T?> pushReplace<T extends Object?>(
     Widget sideSheet, {
     Alignment? alignment,
+    SheetTransitionBuilder? transitionBuilder,
   }) async {
+    assert(
+      _sheetEntries.isNotEmpty,
+      'Nothing to replace. Firstly, you need to push a sheet to the stack of widget',
+    );
+
     final oldEntry = _sheetEntries.last;
-    final indexOfOldEntry = _sheetEntries.indexOf(oldEntry);
     final oldCompleter = oldEntry.completer as Completer<T?>;
 
     final newEntry = SheetEntry<T?>.createNewElement(
@@ -174,16 +188,19 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       animationDuration: widget.settleDuration,
       sheet: sideSheet,
       completer: oldCompleter,
-      initWithAnimation: false,
-      transitionAnimation: oldEntry.transitionAnimation,
+      initWithAnimation: true,
+      transitionBuilder: transitionBuilder ?? oldEntry.transitionBuilder,
       alignment: alignment ?? oldEntry.alignment,
       dismissible: oldEntry.dismissible,
     );
-    _sheetEntries.replaceRange(indexOfOldEntry, indexOfOldEntry + 1, [newEntry]);
-
+    _sheetEntries.add(newEntry);
     if (_overlayState?.mounted == true) {
       _overlayState?.setState(() {});
     }
+
+    await Future.delayed(const Duration(milliseconds: 17));
+    _removeClearlySheet(oldEntry);
+
     return oldCompleter.future;
   }
 
@@ -207,13 +224,13 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     _scrimAnimationController.forward();
   }
 
-  /// remove sheet's entry with disposing its animation controller
+  /// remove sheet's entry from the stack with disposing its animation controller
   void _removeClearlySheet(SheetEntry entry) {
     entry.animationController.dispose();
     _sheetEntries.removeWhere((e) => e == entry);
   }
 
-  /// showing an overlay with custom navigation stack
+  /// showing an overlay with a custom nested navigation
   OverlayEntry _buildOverlayEntry() => OverlayEntry(
         builder: (ctx) => InheritedSheetDataProvider(
           state: this,

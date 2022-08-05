@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/src/sliding_animation_widget.dart';
+import 'package:krootl_flutter_side_menu/src/type_defs.dart';
 
 class SheetEntry<T> {
   /// unique value
@@ -13,7 +14,8 @@ class SheetEntry<T> {
   /// the sheet's controller
   final AnimationController animationController;
 
-  final AnimatedWidget Function(Widget child, Animation<double> position) transitionAnimation;
+  /// custom animation transition builder
+  final SheetTransitionBuilder transitionBuilder;
 
   /// a unique completer for getting a feature result
   final Completer<T?> completer;
@@ -21,6 +23,7 @@ class SheetEntry<T> {
   /// which the side do you want to animate a sheet
   final Alignment alignment;
 
+  /// an ability to close sheets by the tapping on the free space
   final bool dismissible;
 
   SheetEntry({
@@ -28,13 +31,13 @@ class SheetEntry<T> {
     required this.slidingAnimationWidget,
     required this.animationController,
     required this.completer,
-    required this.transitionAnimation,
+    required this.transitionBuilder,
     required this.alignment,
     required this.dismissible,
   });
 
   factory SheetEntry.createNewElement({
-    required AnimatedWidget Function(Widget child, Animation<double> animation) transitionAnimation,
+    required AnimatedWidget Function(Widget child, Animation<double> animation) transitionBuilder,
     required TickerProvider tickerProvider,
     required Duration animationDuration,
     required Widget sheet,
@@ -52,7 +55,7 @@ class SheetEntry<T> {
 
     final animatedSheet = SlidingAnimationWidget(
       key: ValueKey(uniqueId),
-      transitionAnimation: transitionAnimation,
+      transitionBuilder: transitionBuilder,
       animationController: animationController,
       initWithAnimation: initWithAnimation,
       child: sheet,
@@ -63,7 +66,7 @@ class SheetEntry<T> {
       slidingAnimationWidget: animatedSheet,
       animationController: animationController,
       completer: completer,
-      transitionAnimation: transitionAnimation,
+      transitionBuilder: transitionBuilder,
       alignment: alignment,
       dismissible: dismissible,
     );

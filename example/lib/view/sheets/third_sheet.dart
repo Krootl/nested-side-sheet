@@ -1,5 +1,6 @@
 import 'package:example/view/sheets/custom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
 
 class ThirdSheet extends StatefulWidget {
   final Size size;
@@ -19,6 +20,13 @@ class _ThirdSheetState extends State<ThirdSheet> {
         size: widget.size,
         backgroundColor: Colors.white,
         value: 'the third sheet',
+        trailing: FloatingActionButton.small(
+          onPressed: () => SheetWidget.of(context).close(
+            'Close all sheets from the third sheet',
+          ),
+          tooltip: 'Popup from all sheets in the stack',
+          child: Icon(Icons.close),
+        ),
         bodyContent: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -25,6 +25,13 @@ class _SecondSheetState extends State<SecondSheet> {
         size: widget.size,
         backgroundColor: Colors.white,
         value: 'the second sheet',
+        trailing: FloatingActionButton.small(
+          onPressed: () => SheetWidget.of(context).close(
+            'Close all sheets from the second sheet',
+          ),
+          tooltip: 'Popup from all sheets in the stack',
+          child: Icon(Icons.close),
+        ),
         bodyContent: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

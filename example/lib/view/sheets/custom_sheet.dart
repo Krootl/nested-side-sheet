@@ -6,6 +6,7 @@ class CustomSheet extends StatelessWidget {
   final String value;
   final Size? size;
   final Function()? onPlusButtonTap;
+  final Widget? trailing;
 
   final Widget? bodyContent;
 
@@ -14,6 +15,7 @@ class CustomSheet extends StatelessWidget {
     this.bodyContent,
     required this.backgroundColor,
     required this.value,
+    this.trailing,
     this.size,
     this.onPlusButtonTap,
   });
@@ -47,12 +49,7 @@ class CustomSheet extends StatelessWidget {
               child: Icon(Icons.arrow_back_rounded),
             ),
             Text(value),
-            if (SheetWidget.of(context).currentSheetLength > 1)
-              FloatingActionButton.small(
-                onPressed: () => SheetWidget.of(context).close('Close all sheets from $value'),
-                tooltip: 'Popup from all sheets in the stack',
-                child: Icon(Icons.close),
-              ),
+            if (trailing != null) trailing!,
           ],
         ),
       );

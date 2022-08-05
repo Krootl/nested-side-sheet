@@ -10,7 +10,7 @@ class NavigateTo {
       SheetWidget.of(context).push(
         sheet,
         alignment: Alignment.centerLeft,
-        transitionAnimation: (child, animation) => SlideTransition(
+        transitionBuilder: (child, animation) => SlideTransition(
           position: animation.drive(
             Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero),
           ),
@@ -23,7 +23,7 @@ class NavigateTo {
       SheetWidget.of(context).push(
         sheet,
         alignment: Alignment.bottomCenter,
-        transitionAnimation: (child, animation) => SlideTransition(
+        transitionBuilder: (child, animation) => SlideTransition(
           position: animation
               .drive(CurveTween(curve: Curves.easeOutCubic))
               .drive(Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)),
