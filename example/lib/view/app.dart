@@ -1,5 +1,6 @@
-import 'package:example/view/navigate_to.dart';
+import 'package:example/view/custom_transition_navigation.dart';
 import 'package:example/view/sheets/first_sheet.dart';
+import 'package:example/view/widget/home_card.dart';
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
 
@@ -13,7 +14,8 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         debugShowCheckedModeBanner: false,
-        home: const SheetWidget(
+        home: SheetWidget(
+          parentDecorationBuilder: (child) => HomeCard(child: child),
           child: MyHomePage(title: 'Sheets Menu'),
         ),
       );
@@ -34,58 +36,60 @@ class _MyHomePageState extends State<MyHomePage> {
   String? resultOfClosingAllSheets;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
-        body: Stack(
-          children: [
-            Center(
-              child: Container(
-                width: 300,
-                height: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (value != null) ...[
-                      Text(value!, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                    ],
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        FloatingActionButton(
-                          onPressed: onLeftButton,
-                          child: Icon(Icons.arrow_back_rounded),
-                        ),
-                        FloatingActionButton(
-                          onPressed: onRightButton,
-                          child: Icon(Icons.arrow_forward_rounded),
+  Widget build(BuildContext context) => HomeCard(
+        child: Scaffold(
+          appBar: AppBar(title: Text(widget.title)),
+          body: Stack(
+            children: [
+              Center(
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (value != null) ...[
+                        Text(value!, textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                      ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          FloatingActionButton(
+                            onPressed: onLeftButton,
+                            child: Icon(Icons.arrow_back_rounded),
+                          ),
+                          FloatingActionButton(
+                            onPressed: onRightButton,
+                            child: Icon(Icons.arrow_forward_rounded),
+                          ),
+                        ],
+                      ),
+                      FloatingActionButton(
+                        onPressed: onBottomCustomAnimation,
+                        child: Icon(Icons.arrow_downward_rounded),
+                      ),
+                      if (resultOfClosingAllSheets != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          resultOfClosingAllSheets!,
+                          textAlign: TextAlign.center,
                         ),
                       ],
-                    ),
-                    FloatingActionButton(
-                      onPressed: onBottomCustomAnimation,
-                      child: Icon(Icons.arrow_downward_rounded),
-                    ),
-                    if (resultOfClosingAllSheets != null) ...[
-                      const SizedBox(height: 16),
-                      Text(
-                        resultOfClosingAllSheets!,
-                        textAlign: TextAlign.center,
-                      ),
                     ],
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
 
   void onLeftButton() async {
-    final result = await NavigateTo.pushLeft(
+    final result = await CustomTransitionNavigation.pushLeft(
       context,
       FirstSheet(
-        size: const Size(376, double.infinity),
+        size: Size(376, MediaQuery.of(context).size.height),
         alignment: Alignment.centerLeft,
       ),
     );
@@ -99,10 +103,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void onRightButton() async {
     final result = await SheetWidget.of(context).pushRight(
       FirstSheet(
-        size: Size(MediaQuery.of(context).size.width * (2 / 3), double.infinity),
+        size: Size(
+          MediaQuery.of(context).size.width * (1 / 3),
+          MediaQuery.of(context).size.height,
+        ),
         alignment: Alignment.centerRight,
       ),
-      dismissible: false,
+      dismissible: true,
     );
     setState(() {
       if (result is String) resultOfClosingAllSheets = result;
@@ -110,7 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onBottomCustomAnimation() async {
-    final result = await NavigateTo.pushBottom(
+    final result = await CustomTransitionNavigation.pushBottom(
       context,
       FirstSheet(
         size: Size(MediaQuery.of(context).size.width, 400),

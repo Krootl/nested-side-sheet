@@ -14,7 +14,7 @@ class SheetWidget extends StatefulWidget {
     required this.child,
     this.settleDuration = _kBaseSettleDuration,
     this.scrimColor = Colors.black45,
-    this.decorationWidget,
+    this.parentDecorationBuilder,
   }) : super(key: key);
 
   /// the animation duration of showing/hiding a sheet
@@ -27,8 +27,8 @@ class SheetWidget extends StatefulWidget {
   /// of your widget tree for finding [SheetWidgetState] in the widget's tree
   final Widget child;
 
-  /// The decoration widget to paint behind the [sheet's stack].
-  final Widget Function(Widget child)? decorationWidget;
+  /// the custom widget for customizing a background view of the sheets.
+  final DecorationBuilder? parentDecorationBuilder;
 
   static SheetWidgetState of(BuildContext context) {
     final inheritedElement =
@@ -79,13 +79,21 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   int get currentSheetLength => _sheetEntries.length;
 
   /// add a sheet to the stack of widgets from the right side
-  Future<T?> pushRight<T extends Object?>(Widget sideSheet, {bool dismissible = true}) => push<T>(
+  Future<T?> pushRight<T extends Object?>(
+    Widget sideSheet, {
+    bool dismissible = true,
+    DecorationBuilder? decorationBuilder,
+  }) =>
+      push<T>(
         sideSheet,
         alignment: Alignment.centerRight,
         transitionBuilder: (child, animation) => SlideTransition(
-          position: animation.drive(Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)),
+          position: animation.drive(
+            Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero),
+          ),
           child: child,
         ),
+        decorationBuilder: decorationBuilder,
         dismissible: dismissible,
       );
 
@@ -94,6 +102,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     Widget sideSheet, {
     required SheetTransitionBuilder transitionBuilder,
     required Alignment alignment,
+    DecorationBuilder? decorationBuilder,
     bool dismissible = true,
   }) async {
     if (!mounted) return null;
@@ -104,6 +113,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       tickerProvider: this,
       sheet: sideSheet,
       completer: completer,
+      decorationBuilder: decorationBuilder ?? widget.parentDecorationBuilder,
       animationDuration: widget.settleDuration,
       alignment: alignment,
       dismissible: dismissible,
@@ -174,6 +184,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     Widget sideSheet, {
     Alignment? alignment,
     SheetTransitionBuilder? transitionBuilder,
+    DecorationBuilder? decorationBuilder,
   }) async {
     assert(
       _sheetEntries.isNotEmpty,
@@ -186,6 +197,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     final newEntry = SheetEntry<T?>.createNewElement(
       tickerProvider: this,
       animationDuration: widget.settleDuration,
+      decorationBuilder: decorationBuilder ?? oldEntry.decorationBuilder,
       sheet: sideSheet,
       completer: oldCompleter,
       initWithAnimation: true,
@@ -232,37 +244,40 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   /// showing an overlay with a custom nested navigation
   OverlayEntry _buildOverlayEntry() => OverlayEntry(
-        builder: (ctx) => InheritedSheetDataProvider(
-          state: this,
-          child: AnimatedBuilder(
-            animation: _scrimColorAnimation,
-            builder: (ctx, child) => Material(
-              color: _scrimColorAnimation.value,
-              child: child,
+        builder: (ctx) => SizedBox.fromSize(
+          size: MediaQuery.of(context).size,
+          child: GestureDetector(
+            onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
+            child: InheritedSheetDataProvider(
+              state: this,
+              child: AnimatedBuilder(
+                animation: _scrimColorAnimation,
+                builder: (ctx, child) => Material(
+                  color: _scrimColorAnimation.value,
+                  child: child,
+                ),
+                child: _overlayContent(ctx),
+              ),
             ),
-            child: widget.decorationWidget == null
-                ? _overlayContent(ctx)
-                : widget.decorationWidget!(_overlayContent(ctx)),
           ),
         ),
       );
 
   Widget _overlayContent(BuildContext context) => Stack(
         children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
-            ),
-          ),
           ..._sheetEntries.map((e) {
             final ignore = e != _sheetEntries.last;
-            return Align(
-              alignment: e.alignment,
-              child: IgnorePointer(
-                ignoring: ignore,
-                child: e.slidingAnimationWidget,
+            final sheet = GestureDetector(
+              onTap: () {},
+              child: Align(
+                alignment: e.alignment,
+                child: IgnorePointer(
+                  ignoring: ignore,
+                  child: e.slidingAnimationWidget,
+                ),
               ),
             );
+            return e.decorationBuilder == null ? sheet : e.decorationBuilder!(sheet);
           }),
         ],
       );

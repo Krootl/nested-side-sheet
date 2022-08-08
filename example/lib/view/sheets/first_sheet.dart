@@ -1,4 +1,4 @@
-import 'package:example/view/navigate_to.dart';
+import 'package:example/view/custom_transition_navigation.dart';
 import 'package:example/view/sheets/custom_sheet.dart';
 import 'package:example/view/sheets/second_sheet.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +38,7 @@ class _FirstSheetState extends State<FirstSheet> {
                 dynamic result;
 
                 if (widget.alignment == Alignment.centerLeft) {
-                  result = await NavigateTo.pushLeft(
+                  result = await CustomTransitionNavigation.pushLeft(
                     context,
                     SecondSheet(size: widget.size, alignment: widget.alignment),
                   );
@@ -50,7 +50,7 @@ class _FirstSheetState extends State<FirstSheet> {
                 }
 
                 if (widget.alignment == Alignment.bottomCenter) {
-                  result = await NavigateTo.pushBottom(
+                  result = await CustomTransitionNavigation.pushBottom(
                     context,
                     SecondSheet(size: widget.size, alignment: widget.alignment),
                   );

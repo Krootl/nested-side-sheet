@@ -26,6 +26,9 @@ class SheetEntry<T> {
   /// an ability to close sheets by the tapping on the free space
   final bool dismissible;
 
+  /// /// The decoration builder to paint behind the [slidingAnimationWidget].
+  final DecorationBuilder? decorationBuilder;
+
   SheetEntry({
     required this.id,
     required this.slidingAnimationWidget,
@@ -34,6 +37,7 @@ class SheetEntry<T> {
     required this.transitionBuilder,
     required this.alignment,
     required this.dismissible,
+    required this.decorationBuilder,
   });
 
   factory SheetEntry.createNewElement({
@@ -43,6 +47,7 @@ class SheetEntry<T> {
     required Widget sheet,
     required Completer<T?> completer,
     required Alignment alignment,
+    required DecorationBuilder? decorationBuilder,
     bool initWithAnimation = true,
     required bool dismissible,
   }) {
@@ -69,6 +74,7 @@ class SheetEntry<T> {
       transitionBuilder: transitionBuilder,
       alignment: alignment,
       dismissible: dismissible,
+      decorationBuilder: decorationBuilder,
     );
   }
 

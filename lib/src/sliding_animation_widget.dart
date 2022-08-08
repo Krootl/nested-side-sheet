@@ -37,7 +37,7 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
   void initState() {
     animationController = widget.animationController;
     animation = ProxyAnimation(animationController);
-    
+
     super.initState();
   }
 
@@ -53,12 +53,11 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: animation,
         builder: (context, child) => widget.transitionBuilder(child!, animation),
-        child: SizedBox(
-          width: sheetSize?.width,
-          height: sheetSize?.height,
+        child: SizedBox.fromSize(
+          size: sheetSize,
           child: MeasureSize(
             onChange: (size) {
-              setState(() => sheetSize = size);
+              setState(() => sheetSize ??= size);
               animate();
             },
             child: widget.child,

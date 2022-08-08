@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
 
 /// Examples of custom transition animation
-class NavigateTo {
-  NavigateTo._();
+class CustomTransitionNavigation {
+  CustomTransitionNavigation._();
 
   /// navigate to the next sheet from the left side of the screen
   static Future<dynamic> pushLeft(BuildContext context, Widget sheet) =>
