@@ -1,6 +1,5 @@
-import 'package:example/view/custom_transition_navigation.dart';
-import 'package:example/view/sheets/first_sheet.dart';
 import 'package:example/view/widget/home_card.dart';
+import 'package:example/view/widget/sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
 
@@ -31,10 +30,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String? value;
-
-  String? resultOfClosingAllSheets;
-
   @override
   Widget build(BuildContext context) => HomeCard(
         child: Scaffold(
@@ -48,10 +43,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (value != null) ...[
-                        Text(value!, textAlign: TextAlign.center),
-                        const SizedBox(height: 16),
-                      ],
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -69,13 +60,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: onBottomCustomAnimation,
                         child: Icon(Icons.arrow_downward_rounded),
                       ),
-                      if (resultOfClosingAllSheets != null) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          resultOfClosingAllSheets!,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -86,46 +70,82 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
   void onLeftButton() async {
-    final result = await CustomTransitionNavigation.pushLeft(
-      context,
-      FirstSheet(
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    final alignment = Alignment.centerLeft;
+    final transitionBuilder = (child, animation) => SlideTransition(
+          position: animation.drive(
+            Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero),
+          ),
+          child: child,
+        );
+
+    final result = await SheetWidget.of(context).push(
+      Sheet(
         size: Size(376, MediaQuery.of(context).size.height),
         alignment: Alignment.centerLeft,
+        backgroundColor: Colors.white,
+        transitionBuilder: transitionBuilder,
+        decorationBuilder: (sheet) => sheet,
       ),
+      alignment: alignment,
+      transitionBuilder: transitionBuilder,
+      decorationBuilder: (sheet) => sheet,
     );
-    setState(() {
-      if (result is String) resultOfClosingAllSheets = result;
-    });
+    if (result is String) showSnackBar(result);
   }
 
-  /// also, you can set parameter [dismissible] = false, if you want
-  /// to prevent closing sheets by tapping on the free space
   void onRightButton() async {
+    ScaffoldMessenger.of(context).clearSnackBars();
+
     final result = await SheetWidget.of(context).pushRight(
-      FirstSheet(
+      Sheet(
         size: Size(
           MediaQuery.of(context).size.width * (1 / 3),
           MediaQuery.of(context).size.height,
         ),
+        backgroundColor: Colors.white,
         alignment: Alignment.centerRight,
+        transitionBuilder: (child, animation) => SlideTransition(
+          position: animation.drive(
+            Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero),
+          ),
+          child: child,
+        ),
       ),
       dismissible: true,
     );
-    setState(() {
-      if (result is String) resultOfClosingAllSheets = result;
-    });
+    if (result is String) showSnackBar(result);
   }
 
   void onBottomCustomAnimation() async {
-    final result = await CustomTransitionNavigation.pushBottom(
-      context,
-      FirstSheet(
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    final sheetTransition = (child, animation) => SlideTransition(
+          position: animation
+              .drive(CurveTween(curve: Curves.easeOutCubic))
+              .drive(Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)),
+          child: child,
+        );
+
+    final result = await SheetWidget.of(context).push(
+      Sheet(
+        transitionBuilder: sheetTransition,
         size: Size(MediaQuery.of(context).size.width, 400),
         alignment: Alignment.bottomCenter,
+        backgroundColor: Colors.white,
       ),
+      transitionBuilder: sheetTransition,
+      alignment: Alignment.bottomCenter,
     );
-    setState(() {
-      if (result is String) resultOfClosingAllSheets = result;
-    });
+
+    if (result is String) showSnackBar(result);
   }
+
+  void showSnackBar(String result) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
 }
