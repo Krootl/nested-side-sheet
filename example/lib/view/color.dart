@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const accentColor = Color(0xFF297A95);
+const accentColor = Color(0xFF673AB7);
 const backgroundColor = Color(0xFF17191A);
 
 const cardShadow = [
