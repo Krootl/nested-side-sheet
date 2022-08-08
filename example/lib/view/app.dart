@@ -1,3 +1,5 @@
+import 'package:example/view/color.dart';
+import 'package:example/view/theme.dart';
 import 'package:example/view/widget/home_card.dart';
 import 'package:example/view/widget/sheet.dart';
 import 'package:flutter/material.dart';
@@ -9,13 +11,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
         title: 'Sheets Example',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: darkTheme(),
         debugShowCheckedModeBanner: false,
-        home: SheetWidget(
-          parentDecorationBuilder: (child) => HomeCard(child: child),
-          child: MyHomePage(title: 'Sheets Menu'),
+        home: Material(
+          color: accentColor,
+          child: SheetWidget(
+            parentDecorationBuilder: (child) => HomeCard(child: child),
+            child: MyHomePage(title: 'Nested Side Sheet'),
+          ),
         ),
       );
 }
@@ -32,40 +35,67 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) => HomeCard(
+        shadows: cardShadow,
         child: Scaffold(
           appBar: AppBar(title: Text(widget.title)),
-          body: Stack(
-            children: [
-              Center(
-                child: Container(
-                  width: 300,
-                  height: 300,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          FloatingActionButton(
-                            onPressed: onLeftButton,
-                            child: Icon(Icons.arrow_back_rounded),
-                          ),
-                          FloatingActionButton(
-                            onPressed: onRightButton,
-                            child: Icon(Icons.arrow_forward_rounded),
-                          ),
-                        ],
-                      ),
-                      FloatingActionButton(
-                        onPressed: onBottomCustomAnimation,
-                        child: Icon(Icons.arrow_downward_rounded),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                infoCard(),
+                const SizedBox(height: 32),
+                navigateButtons(),
+              ],
+            ),
           ),
+        ),
+      );
+
+  Widget infoCard() => Container(
+        width: 300,
+        height: 100,
+        decoration: ShapeDecoration(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(color: accentColor),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            'Hello World!',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+
+  Widget navigateButtons() => Container(
+        width: 300,
+        height: 300,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                FloatingActionButton(
+                  onPressed: onLeftButton,
+                  child: Icon(Icons.arrow_back_rounded),
+                ),
+                FloatingActionButton(
+                  onPressed: onRightButton,
+                  child: Icon(Icons.arrow_forward_rounded),
+                ),
+              ],
+            ),
+            FloatingActionButton(
+              onPressed: onBottomCustomAnimation,
+              child: Icon(Icons.arrow_downward_rounded),
+            ),
+          ],
         ),
       );
 
@@ -84,7 +114,6 @@ class _MyHomePageState extends State<MyHomePage> {
       Sheet(
         size: Size(376, MediaQuery.of(context).size.height),
         alignment: Alignment.centerLeft,
-        backgroundColor: Colors.white,
         transitionBuilder: transitionBuilder,
         decorationBuilder: (sheet) => sheet,
       ),
@@ -104,7 +133,6 @@ class _MyHomePageState extends State<MyHomePage> {
           MediaQuery.of(context).size.width * (1 / 3),
           MediaQuery.of(context).size.height,
         ),
-        backgroundColor: Colors.white,
         alignment: Alignment.centerRight,
         transitionBuilder: (child, animation) => SlideTransition(
           position: animation.drive(
@@ -133,7 +161,6 @@ class _MyHomePageState extends State<MyHomePage> {
         transitionBuilder: sheetTransition,
         size: Size(MediaQuery.of(context).size.width, 400),
         alignment: Alignment.bottomCenter,
-        backgroundColor: Colors.white,
       ),
       transitionBuilder: sheetTransition,
       alignment: Alignment.bottomCenter,

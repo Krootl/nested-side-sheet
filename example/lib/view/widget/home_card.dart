@@ -5,9 +5,11 @@ class HomeCard extends StatelessWidget {
     this.child,
     this.backgroundColor,
     this.height,
+    this.shadows,
     Key? key,
   }) : super(key: key);
 
+  final List<BoxShadow>? shadows;
   final Widget? child;
   final Color? backgroundColor;
   final double? height;
@@ -49,6 +51,7 @@ class HomeCard extends StatelessWidget {
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           color: backgroundColor,
+          boxShadow: shadows,
           borderRadius: BorderRadius.only(
             topRight: Radius.circular(40),
           ),
