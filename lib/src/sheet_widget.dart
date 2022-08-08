@@ -47,12 +47,15 @@ class SheetWidget extends StatefulWidget {
 }
 
 class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin {
+  Timer? _changeCurrentItemsLengthTimer;
+  ValueNotifier<int> _currentItemsLengthNotifier = ValueNotifier(0);
+
   OverlayEntry? _overlayEntry;
   OverlayState? _overlayState;
 
   /// prevent unnecessary touches while there is animating
   bool get _blockTouches => _sheetEntries.any(
-        (element) => !element.animationController.isCompleted,
+        (element) => element.animationController.isAnimating,
       );
 
   /// a background color
@@ -64,6 +67,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   @override
   void initState() {
+    _currentItemsLengthNotifier = ValueNotifier(0);
     _scrimAnimationController = AnimationController(
       vsync: this,
       duration: widget.settleDuration,
@@ -75,8 +79,16 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     super.initState();
   }
 
+  @override
+  void dispose() {
+    _currentItemsLengthNotifier.dispose();
+    super.dispose();
+  }
+
   /// the current length of the sheet entries in the stack
-  int get currentSheetLength => _sheetEntries.length;
+  int get currentSheetLength => _currentItemsLengthNotifier.value;
+
+  ValueNotifier<int> get currentSheetsLengthNotifier => _currentItemsLengthNotifier;
 
   /// add a sheet to the stack of widgets from the right side
   Future<T?> pushRight<T extends Object?>(
@@ -119,6 +131,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       dismissible: dismissible,
     );
     _sheetEntries.add(newEntry);
+    _changeCurrentLength();
 
     /// if there is not any overlay, it will be created
     if (_overlayEntry == null) _initOverlay();
@@ -240,24 +253,29 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   void _removeClearlySheet(SheetEntry entry) {
     entry.animationController.dispose();
     _sheetEntries.removeWhere((e) => e == entry);
+    _changeCurrentLength();
+  }
+
+  void _changeCurrentLength() {
+    _changeCurrentItemsLengthTimer?.cancel();
+    _changeCurrentItemsLengthTimer = Timer(const Duration(milliseconds: 4), () {
+      _currentItemsLengthNotifier.value = _sheetEntries.length;
+    });
   }
 
   /// showing an overlay with a custom nested navigation
   OverlayEntry _buildOverlayEntry() => OverlayEntry(
-        builder: (ctx) => SizedBox.fromSize(
-          size: MediaQuery.of(context).size,
-          child: GestureDetector(
-            onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
-            child: InheritedSheetDataProvider(
-              state: this,
-              child: AnimatedBuilder(
-                animation: _scrimColorAnimation,
-                builder: (ctx, child) => Material(
-                  color: _scrimColorAnimation.value,
-                  child: child,
-                ),
-                child: _overlayContent(ctx),
+        builder: (ctx) => GestureDetector(
+          onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
+          child: InheritedSheetDataProvider(
+            state: this,
+            child: AnimatedBuilder(
+              animation: _scrimColorAnimation,
+              builder: (ctx, child) => Material(
+                color: _scrimColorAnimation.value,
+                child: child,
               ),
+              child: _overlayContent(ctx),
             ),
           ),
         ),

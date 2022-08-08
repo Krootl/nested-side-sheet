@@ -37,11 +37,15 @@ class Sheet extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            if (index > 1)
-              TextButton(
-                onPressed: SheetWidget.of(context).pop,
-                child: Text('BACK'),
-              ),
+            ValueListenableBuilder<int>(
+              valueListenable: SheetWidget.of(context).currentSheetsLengthNotifier,
+              builder: (context, value, child) => value <= 1
+                  ? const SizedBox.shrink()
+                  : TextButton(
+                      onPressed: SheetWidget.of(context).pop,
+                      child: Text('BACK'),
+                    ),
+            ),
             Text('Menu #$index'),
             TextButton(
               onPressed: () => SheetWidget.of(context).close(
