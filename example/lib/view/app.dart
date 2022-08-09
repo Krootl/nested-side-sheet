@@ -10,13 +10,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'Sheets Example',
-        theme: darkTheme(),
+        title: 'Nested Side Sheet',
+        theme: lightTheme(),
         debugShowCheckedModeBanner: false,
         home: Material(
           color: accentColor,
           child: SheetWidget(
-            parentDecorationBuilder: (child) => HomeCard(child: child),
             child: MyHomePage(title: 'Nested Side Sheet'),
           ),
         ),
@@ -66,7 +65,6 @@ class _MyHomePageState extends State<MyHomePage> {
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
             ),
           ),
         ),
@@ -126,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void onRightButton() async {
     ScaffoldMessenger.of(context).clearSnackBars();
+    final decorationBuilder = (child) => HomeCard(child: child);
 
     final result = await SheetWidget.of(context).pushRight(
       Sheet(
@@ -134,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
           MediaQuery.of(context).size.height,
         ),
         alignment: Alignment.centerRight,
+        decorationBuilder: decorationBuilder,
         transitionBuilder: (child, animation) => SlideTransition(
           position: animation.drive(
             Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero),
@@ -141,6 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: child,
         ),
       ),
+      decorationBuilder: decorationBuilder,
       dismissible: true,
     );
     if (result is String) showSnackBar(result);
@@ -148,6 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void onBottomCustomAnimation() async {
     ScaffoldMessenger.of(context).clearSnackBars();
+    final decorationBuilder = (child) => HomeCard(child: child);
 
     final sheetTransition = (child, animation) => SlideTransition(
           position: animation
@@ -158,10 +160,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final result = await SheetWidget.of(context).push(
       Sheet(
+        decorationBuilder: decorationBuilder,
         transitionBuilder: sheetTransition,
         size: Size(MediaQuery.of(context).size.width, 400),
         alignment: Alignment.bottomCenter,
       ),
+      decorationBuilder: decorationBuilder,
       transitionBuilder: sheetTransition,
       alignment: Alignment.bottomCenter,
     );
@@ -171,7 +175,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void showSnackBar(String result) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result),
+          content: Text(result, textAlign: TextAlign.center),
+          width: MediaQuery.of(context).size.width / 6,
           behavior: SnackBarBehavior.floating,
         ),
       );

@@ -34,27 +34,24 @@ class Sheet extends StatelessWidget {
       );
 
   Widget appBar(BuildContext context) => AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ValueListenableBuilder<int>(
-              valueListenable: SheetWidget.of(context).currentSheetsLengthNotifier,
-              builder: (context, value, child) => value <= 1
-                  ? const SizedBox.shrink()
-                  : TextButton(
-                      onPressed: SheetWidget.of(context).pop,
-                      child: Text('BACK'),
-                    ),
-            ),
-            Text('Menu #$index'),
-            TextButton(
-              onPressed: () => SheetWidget.of(context).close(
-                'The sheets has been closed from the ${index}th sheet',
-              ),
-              child: Text('CLOSE'),
-            ),
-          ],
+        leading: ValueListenableBuilder<int>(
+          valueListenable: SheetWidget.of(context).currentSheetsLengthNotifier,
+          builder: (context, value, child) => value <= 1
+              ? const SizedBox.shrink()
+              : TextButton(
+                  onPressed: SheetWidget.of(context).pop,
+                  child: Text('BACK'),
+                ),
         ),
+        title: Text('Menu #$index'),
+        actions: [
+          TextButton(
+            onPressed: () => SheetWidget.of(context).close(
+              'The sheets has been closed from the ${index}th sheet',
+            ),
+            child: Text('CLOSE'),
+          ),
+        ],
       );
 
   Widget bodyContent(BuildContext context) => Container(
@@ -80,7 +77,12 @@ class Sheet extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: ElevatedButton(
-                  onPressed: () => SheetWidget.of(context).pushReplace(_sheet),
+                  onPressed: () => SheetWidget.of(context).pushReplace(
+                    _sheet,
+                    decorationBuilder: decorationBuilder,
+                    transitionBuilder: transitionBuilder,
+                    alignment: alignment,
+                  ),
                   child: Text('REPLACE'),
                 ),
               ),
