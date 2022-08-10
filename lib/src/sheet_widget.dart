@@ -47,9 +47,6 @@ class SheetWidget extends StatefulWidget {
 }
 
 class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin {
-  Timer? _changeCurrentItemsLengthTimer;
-  ValueNotifier<int> _currentItemsLengthNotifier = ValueNotifier(0);
-
   OverlayEntry? _overlayEntry;
   OverlayState? _overlayState;
 
@@ -62,12 +59,16 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   late AnimationController _scrimAnimationController;
   late Animation<Color?> _scrimColorAnimation;
 
-  /// the list of sheets
+  /// the list of the sheet entries
   final _sheetEntries = <SheetEntry>[];
+
+  /// the list of the sheets
+  final _sheets = <Widget>[];
+
+  int currentSheetIndex(Widget child) => _sheets.indexOf(child);
 
   @override
   void initState() {
-    _currentItemsLengthNotifier = ValueNotifier(0);
     _scrimAnimationController = AnimationController(
       vsync: this,
       duration: widget.settleDuration,
@@ -78,17 +79,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     ).animate(_scrimAnimationController);
     super.initState();
   }
-
-  @override
-  void dispose() {
-    _currentItemsLengthNotifier.dispose();
-    super.dispose();
-  }
-
-  /// the current length of the sheet entries in the stack
-  int get currentSheetLength => _currentItemsLengthNotifier.value;
-
-  ValueNotifier<int> get currentSheetsLengthNotifier => _currentItemsLengthNotifier;
 
   /// add a sheet to the stack of widgets from the right side
   Future<T?> pushRight<T extends Object?>(
@@ -131,7 +121,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       dismissible: dismissible,
     );
     _sheetEntries.add(newEntry);
-    _changeCurrentLength();
+    _sheets.add(sideSheet);
 
     /// if there is not any overlay, it will be created
     if (_overlayEntry == null) _initOverlay();
@@ -155,7 +145,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     final firstCompleter = _sheetEntries.first.completer;
 
     for (final entry in _sheetEntries.reversed.toList()) {
-      if (_sheetEntries.last != entry) _removeClearlySheet(entry);
+      if (_sheetEntries.last != entry) {
+        _removeClearlySheet(entry);
+        _sheets.remove(entry.slidingAnimationWidget.child);
+      }
     }
     if (_overlayState?.mounted == true) {
       _overlayState?.setState(() {});
@@ -180,6 +173,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
       await Future.delayed(widget.settleDuration);
       _removeClearlySheet(sideSheet);
+      _sheets.remove(sideSheet.slidingAnimationWidget.child);
+
       if (_overlayState?.mounted == true) {
         _overlayState?.setState(() {});
       }
@@ -194,7 +189,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   /// Replace the last sheet of the stack to the new one
   Future<T?> pushReplace<T extends Object?>(
-    Widget sideSheet, {
+    Widget newSheet, {
     Alignment? alignment,
     SheetTransitionBuilder? transitionBuilder,
     DecorationBuilder? decorationBuilder,
@@ -205,26 +200,40 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     );
 
     final oldEntry = _sheetEntries.last;
+    final oldSheet = oldEntry.slidingAnimationWidget.child;
     final oldCompleter = oldEntry.completer as Completer<T?>;
+
+    _sheets
+      ..remove(oldSheet)
+      ..add(newSheet);
 
     final newEntry = SheetEntry<T?>.createNewElement(
       tickerProvider: this,
       animationDuration: widget.settleDuration,
       decorationBuilder: decorationBuilder ?? oldEntry.decorationBuilder,
-      sheet: sideSheet,
+      sheet: newSheet,
       completer: oldCompleter,
       initWithAnimation: true,
       transitionBuilder: transitionBuilder ?? oldEntry.transitionBuilder,
       alignment: alignment ?? oldEntry.alignment,
       dismissible: oldEntry.dismissible,
     );
-    _sheetEntries.add(newEntry);
+
     if (_overlayState?.mounted == true) {
+      // add a new sheet entry
+      _sheetEntries.add(newEntry);
       _overlayState?.setState(() {});
     }
 
-    await Future.delayed(const Duration(milliseconds: 17));
-    _removeClearlySheet(oldEntry);
+    // waiting for the end of the animation of a [slidingAnimationWidget]
+    await Future.delayed(widget.settleDuration);
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    // and remove an old sheetEntry from the stack
+    if (_overlayState?.mounted == true) {
+      _removeClearlySheet(oldEntry);
+      _overlayState?.setState(() {});
+    }
 
     return oldCompleter.future;
   }
@@ -238,6 +247,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _overlayEntry?.remove();
       _overlayEntry = null;
       _overlayState = null;
+      _sheets.clear();
     }
   }
 
@@ -253,14 +263,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   void _removeClearlySheet(SheetEntry entry) {
     entry.animationController.dispose();
     _sheetEntries.removeWhere((e) => e == entry);
-    _changeCurrentLength();
-  }
-
-  void _changeCurrentLength() {
-    _changeCurrentItemsLengthTimer?.cancel();
-    _changeCurrentItemsLengthTimer = Timer(const Duration(milliseconds: 4), () {
-      _currentItemsLengthNotifier.value = _sheetEntries.length;
-    });
   }
 
   /// showing an overlay with a custom nested navigation

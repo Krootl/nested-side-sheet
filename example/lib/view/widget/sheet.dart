@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
 
-class Sheet extends StatelessWidget {
+class Sheet extends StatefulWidget {
   final Size size;
 
   final int index;
@@ -20,9 +20,16 @@ class Sheet extends StatelessWidget {
   });
 
   @override
+  State<Sheet> createState() => _SheetState();
+}
+
+class _SheetState extends State<Sheet> {
+  bool get showBackButton => (SheetWidget.of(context).currentSheetIndex(widget) > 0);
+
+  @override
   Widget build(BuildContext context) => SizedBox(
-        width: size.width,
-        height: size.height,
+        width: widget.size.width,
+        height: widget.size.height,
         child: Material(
           color: Colors.transparent,
           elevation: 4,
@@ -34,20 +41,17 @@ class Sheet extends StatelessWidget {
       );
 
   Widget appBar(BuildContext context) => AppBar(
-        leading: ValueListenableBuilder<int>(
-          valueListenable: SheetWidget.of(context).currentSheetsLengthNotifier,
-          builder: (context, value, child) => value <= 1
-              ? const SizedBox.shrink()
-              : TextButton(
-                  onPressed: SheetWidget.of(context).pop,
-                  child: Text('BACK'),
-                ),
-        ),
-        title: Text('Menu #$index'),
+        leading: !showBackButton
+            ? const SizedBox.shrink()
+            : TextButton(
+                onPressed: SheetWidget.of(context).pop,
+                child: Text('BACK'),
+              ),
+        title: Text('Menu #${widget.index}'),
         actions: [
           TextButton(
             onPressed: () => SheetWidget.of(context).close(
-              'The sheets has been closed from the ${index}th sheet',
+              'The sheets has been closed from the ${widget.index}th one',
             ),
             child: Text('CLOSE'),
           ),
@@ -64,9 +68,9 @@ class Sheet extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => SheetWidget.of(context).push(
                     _sheet,
-                    transitionBuilder: transitionBuilder,
-                    decorationBuilder: decorationBuilder,
-                    alignment: alignment,
+                    transitionBuilder: widget.transitionBuilder,
+                    decorationBuilder: widget.decorationBuilder,
+                    alignment: widget.alignment,
                   ),
                   child: Text('PUSH'),
                 ),
@@ -79,9 +83,9 @@ class Sheet extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => SheetWidget.of(context).pushReplace(
                     _sheet,
-                    decorationBuilder: decorationBuilder,
-                    transitionBuilder: transitionBuilder,
-                    alignment: alignment,
+                    decorationBuilder: widget.decorationBuilder,
+                    transitionBuilder: widget.transitionBuilder,
+                    alignment: widget.alignment,
                   ),
                   child: Text('REPLACE'),
                 ),
@@ -92,10 +96,10 @@ class Sheet extends StatelessWidget {
       );
 
   Widget get _sheet => Sheet(
-        decorationBuilder: decorationBuilder,
-        transitionBuilder: transitionBuilder,
-        size: size,
-        index: index + 1,
-        alignment: alignment,
+        decorationBuilder: widget.decorationBuilder,
+        transitionBuilder: widget.transitionBuilder,
+        size: widget.size,
+        index: widget.index + 1,
+        alignment: widget.alignment,
       );
 }
