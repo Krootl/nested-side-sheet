@@ -29,6 +29,8 @@ class SheetEntry<T> {
   /// /// The decoration builder to paint behind the [slidingAnimationWidget].
   final DecorationBuilder? decorationBuilder;
 
+  bool willBeRemoved;
+
   SheetEntry({
     required this.id,
     required this.slidingAnimationWidget,
@@ -38,6 +40,7 @@ class SheetEntry<T> {
     required this.alignment,
     required this.dismissible,
     required this.decorationBuilder,
+    this.willBeRemoved = false,
   });
 
   factory SheetEntry.createNewElement({

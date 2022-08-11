@@ -62,10 +62,13 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   /// the list of the sheet entries
   final _sheetEntries = <SheetEntry>[];
 
-  /// the list of the sheets
-  final _sheets = <Widget>[];
-
-  int currentSheetIndex(Widget child) => _sheets.indexOf(child);
+  int currentSheetIndex(Widget child) {
+    final entriesList = _sheetEntries
+        .where((element) => !element.willBeRemoved)
+        .map((e) => e.slidingAnimationWidget.child)
+        .toList();
+    return entriesList.indexOf(child);
+  }
 
   @override
   void initState() {
@@ -121,7 +124,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       dismissible: dismissible,
     );
     _sheetEntries.add(newEntry);
-    _sheets.add(sideSheet);
 
     /// if there is not any overlay, it will be created
     if (_overlayEntry == null) _initOverlay();
@@ -147,7 +149,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     for (final entry in _sheetEntries.reversed.toList()) {
       if (_sheetEntries.last != entry) {
         _removeClearlySheet(entry);
-        _sheets.remove(entry.slidingAnimationWidget.child);
       }
     }
     if (_overlayState?.mounted == true) {
@@ -155,6 +156,15 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     }
     await Future.delayed(const Duration(milliseconds: 17));
     _pop<T>(result, firstCompleter);
+  }
+
+  void popUntil<T extends Object?>(SheetPredicate predicate, [T? result]) async {
+    if (_blockTouches) return;
+    for (final entry in _sheetEntries) {
+      if (!predicate(entry)) {
+        _pop(result);
+      }
+    }
   }
 
   void pop<T extends Object?>([T? result]) => _pop<T>(result);
@@ -173,7 +183,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
       await Future.delayed(widget.settleDuration);
       _removeClearlySheet(sideSheet);
-      _sheets.remove(sideSheet.slidingAnimationWidget.child);
 
       if (_overlayState?.mounted == true) {
         _overlayState?.setState(() {});
@@ -200,12 +209,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     );
 
     final oldEntry = _sheetEntries.last;
-    final oldSheet = oldEntry.slidingAnimationWidget.child;
     final oldCompleter = oldEntry.completer as Completer<T?>;
 
-    _sheets
-      ..remove(oldSheet)
-      ..add(newSheet);
+    oldEntry.willBeRemoved = true;
 
     final newEntry = SheetEntry<T?>.createNewElement(
       tickerProvider: this,
@@ -247,7 +253,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _overlayEntry?.remove();
       _overlayEntry = null;
       _overlayState = null;
-      _sheets.clear();
     }
   }
 

@@ -24,7 +24,13 @@ class Sheet extends StatefulWidget {
 }
 
 class _SheetState extends State<Sheet> {
-  bool get showBackButton => (SheetWidget.of(context).currentSheetIndex(widget) > 0);
+  bool? showBackButton;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    showBackButton ??= SheetWidget.of(context).currentSheetIndex(widget) > 0;
+  }
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -41,7 +47,7 @@ class _SheetState extends State<Sheet> {
       );
 
   Widget appBar(BuildContext context) => AppBar(
-        leading: !showBackButton
+        leading: !(showBackButton!)
             ? const SizedBox.shrink()
             : TextButton(
                 onPressed: SheetWidget.of(context).pop,
