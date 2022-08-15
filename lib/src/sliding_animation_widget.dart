@@ -28,13 +28,14 @@ class SlidingAnimationWidget extends StatefulWidget {
 
 class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
     with TickerProviderStateMixin {
-  Size? sheetSize;
+  late ValueNotifier<Size?> sheetSizeNotifier;
 
   late final AnimationController animationController;
   late Animation<double> animation;
 
   @override
   void initState() {
+    sheetSizeNotifier = ValueNotifier(null);
     animationController = widget.animationController;
     animation = ProxyAnimation(animationController);
 
@@ -53,14 +54,17 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: animation,
         builder: (context, child) => widget.transitionBuilder(child!, animation),
-        child: SizedBox.fromSize(
-          size: sheetSize,
-          child: MeasureSize(
-            onChange: (size) {
-              setState(() => sheetSize ??= size);
-              animate();
-            },
-            child: widget.child,
+        child: MeasureSize(
+          onChange: (size) {
+            sheetSizeNotifier.value ??= size;
+            animate();
+          },
+          child: ValueListenableBuilder<Size?>(
+            valueListenable: sheetSizeNotifier,
+            builder: (context, size, child) => SizedBox.fromSize(
+              size: size,
+              child: widget.child,
+            ),
           ),
         ),
       );
