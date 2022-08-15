@@ -88,6 +88,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     Widget sideSheet, {
     bool dismissible = true,
     DecorationBuilder? decorationBuilder,
+    Duration? animationDuration,
   }) =>
       push<T>(
         sideSheet,
@@ -100,6 +101,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
         ),
         decorationBuilder: decorationBuilder,
         dismissible: dismissible,
+        animationDuration: _scrimAnimationController.duration =
+            animationDuration ?? widget.settleDuration,
       );
 
   /// add a sheet to the stack of widgets with custom transition
@@ -109,6 +112,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     required Alignment alignment,
     DecorationBuilder? decorationBuilder,
     bool dismissible = true,
+    Duration? animationDuration,
   }) async {
     if (!mounted) return null;
     final completer = Completer<T?>();
@@ -119,9 +123,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       sheet: sideSheet,
       completer: completer,
       decorationBuilder: decorationBuilder ?? widget.parentDecorationBuilder,
-      animationDuration: widget.settleDuration,
       alignment: alignment,
       dismissible: dismissible,
+      animationDuration: _scrimAnimationController.duration =
+          animationDuration ?? widget.settleDuration,
     );
     _sheetEntries.add(newEntry);
 
@@ -181,7 +186,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       final sideSheet = _sheetEntries.last;
       sideSheet.animationController.reverse();
 
-      await Future.delayed(widget.settleDuration);
+      await Future.delayed(
+        _scrimAnimationController.duration ?? widget.settleDuration,
+      );
       _removeClearlySheet(sideSheet);
 
       if (_overlayState?.mounted == true) {
@@ -202,6 +209,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     Alignment? alignment,
     SheetTransitionBuilder? transitionBuilder,
     DecorationBuilder? decorationBuilder,
+    Duration? animationDuration,
   }) async {
     assert(
       _sheetEntries.isNotEmpty,
@@ -215,14 +223,14 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
     final newEntry = SheetEntry<T?>.createNewElement(
       tickerProvider: this,
-      animationDuration: widget.settleDuration,
       decorationBuilder: decorationBuilder ?? oldEntry.decorationBuilder,
       sheet: newSheet,
       completer: oldCompleter,
-      initWithAnimation: true,
       transitionBuilder: transitionBuilder ?? oldEntry.transitionBuilder,
       alignment: alignment ?? oldEntry.alignment,
       dismissible: oldEntry.dismissible,
+      animationDuration: _scrimAnimationController.duration =
+          animationDuration ?? widget.settleDuration,
     );
 
     if (_overlayState?.mounted == true) {
@@ -232,7 +240,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     }
 
     // waiting for the end of the animation of a [slidingAnimationWidget]
-    await Future.delayed(widget.settleDuration);
+    await Future.delayed(
+      _scrimAnimationController.duration ?? widget.settleDuration,
+    );
     await Future.delayed(const Duration(milliseconds: 100));
 
     // and remove an old sheetEntry from the stack
@@ -249,7 +259,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   void _maybeCloseOverlay() async {
     if (_sheetEntries.isEmpty) {
       _scrimAnimationController.reverse();
-      await Future.delayed(widget.settleDuration);
+      await Future.delayed(
+        _scrimAnimationController.duration ?? widget.settleDuration,
+      );
       _overlayEntry?.remove();
       _overlayEntry = null;
       _overlayState = null;
