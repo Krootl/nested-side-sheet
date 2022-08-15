@@ -118,7 +118,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     DecorationBuilder? decorationBuilder,
     bool dismissible = true,
     Duration? animationDuration,
-    Duration? reverseDuration,
+    Duration? reverseAnimationDuration,
   }) async {
     if (!mounted) return null;
     final completer = Completer<T?>();
@@ -132,7 +132,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       alignment: alignment,
       dismissible: dismissible,
       animationDuration: _setSettleDuration(animationDuration),
-      reverseDuration: _setReverseSettleDuration(reverseDuration),
+      reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
     );
     _sheetEntries.add(newEntry);
 
@@ -217,7 +217,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     SheetTransitionBuilder? transitionBuilder,
     DecorationBuilder? decorationBuilder,
     Duration? animationDuration,
-    Duration? reverseDuration,
+    Duration? reverseAnimationDuration,
   }) async {
     assert(
       _sheetEntries.isNotEmpty,
@@ -238,7 +238,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       alignment: alignment ?? oldEntry.alignment,
       dismissible: oldEntry.dismissible,
       animationDuration: _setSettleDuration(animationDuration),
-      reverseDuration: _setReverseSettleDuration(reverseDuration),
+      reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
     );
 
     if (_overlayState?.mounted == true) {
@@ -268,7 +268,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     if (_sheetEntries.isEmpty) {
       _scrimAnimationController.reverse();
       await Future.delayed(
-        _scrimAnimationController.duration ?? widget.settleDuration,
+        _scrimAnimationController.reverseDuration ?? widget.reverseSettleDuration,
       );
       _overlayEntry?.remove();
       _overlayEntry = null;
