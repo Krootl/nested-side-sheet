@@ -286,23 +286,25 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   OverlayEntry _buildOverlayEntry() => OverlayEntry(
         builder: (ctx) => GestureDetector(
           onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
-          child: InheritedSheetDataProvider(
-            state: this,
-            child: AnimatedBuilder(
-              animation: _scrimColorAnimation,
-              builder: (ctx, child) => Material(
-                color: _scrimColorAnimation.value,
-                child: child,
-              ),
-              child: RepaintBoundary(
-                child: _overlayContent(ctx),
+          child: RepaintBoundary(
+            child: InheritedSheetDataProvider(
+              state: this,
+              child: AnimatedBuilder(
+                animation: _scrimColorAnimation,
+                builder: (ctx, child) => Material(
+                  color: _scrimColorAnimation.value,
+                  child: child,
+                ),
+                child: RepaintBoundary(
+                  child: _overlayContent(),
+                ),
               ),
             ),
           ),
         ),
       );
 
-  Widget _overlayContent(BuildContext context) => Stack(
+  Widget _overlayContent() => Stack(
         children: [
           ..._sheetEntries.map((e) {
             final ignore = e != _sheetEntries.last;
@@ -312,7 +314,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
                 alignment: e.alignment,
                 child: IgnorePointer(
                   ignoring: ignore,
-                  child: e.slidingAnimationWidget,
+                  child: RepaintBoundary(
+                    child: e.slidingAnimationWidget,
+                  ),
                 ),
               ),
             );
