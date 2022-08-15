@@ -193,7 +193,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       sideSheet.animationController.reverse();
 
       await Future.delayed(
-        _scrimAnimationController.duration ?? widget.settleDuration,
+        _setReverseSettleDuration(sideSheet.animationController.reverseDuration),
       );
       _removeClearlySheet(sideSheet);
 
@@ -248,9 +248,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     }
 
     // waiting for the end of the animation of a [slidingAnimationWidget]
-    await Future.delayed(
-      _scrimAnimationController.duration ?? widget.settleDuration,
-    );
+    await Future.delayed(_scrimAnimationController.duration!);
     await Future.delayed(const Duration(milliseconds: 100));
 
     // and remove an old sheetEntry from the stack
