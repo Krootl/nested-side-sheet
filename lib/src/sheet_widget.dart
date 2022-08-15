@@ -294,7 +294,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
                 color: _scrimColorAnimation.value,
                 child: child,
               ),
-              child: _overlayContent(ctx),
+              child: RepaintBoundary(
+                child: _overlayContent(ctx),
+              ),
             ),
           ),
         ),
@@ -314,7 +316,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
                 ),
               ),
             );
-            return e.decorationBuilder == null ? sheet : e.decorationBuilder!(sheet);
+            return RepaintBoundary(
+              child: e.decorationBuilder == null ? sheet : e.decorationBuilder!(sheet),
+            );
           }),
         ],
       );

@@ -63,8 +63,9 @@ class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
             valueListenable: sheetSizeNotifier,
             builder: (context, size, child) => SizedBox.fromSize(
               size: size,
-              child: widget.child,
+              child: child,
             ),
+            child: RepaintBoundary(child: widget.child),
           ),
         ),
       );
