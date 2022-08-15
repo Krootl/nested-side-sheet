@@ -6,7 +6,7 @@ import 'package:krootl_flutter_side_menu/src/sheet_entry.dart';
 import 'package:krootl_flutter_side_menu/src/type_defs.dart';
 
 /// default animation duration of showing/hiding a sheet
-const _kBaseSettleDuration = Duration(milliseconds: 300);
+const _kBaseSettleDuration = Duration(milliseconds: 267);
 
 class SheetWidget extends StatefulWidget {
   const SheetWidget({
@@ -267,7 +267,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _overlayEntry = null;
       _overlayState = null;
     }
-    _sheetEntries.clear();
   }
 
   void _initOverlay() {
