@@ -6,7 +6,7 @@ import 'package:krootl_flutter_side_menu/src/sheet_entry.dart';
 import 'package:krootl_flutter_side_menu/src/type_defs.dart';
 
 /// default animation duration of showing/hiding a sheet
-const _kBaseSettleDuration = Duration(milliseconds: 250);
+const _kBaseSettleDuration = Duration(milliseconds: 300);
 
 class SheetWidget extends StatefulWidget {
   const SheetWidget({
@@ -194,13 +194,14 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       if (_overlayState?.mounted == true) {
         _overlayState?.setState(() {});
       }
+      await _maybeCloseOverlay();
+
       if (completer != null) {
         completer.complete(result);
       } else {
         sideSheet.completer.complete(result);
       }
     }
-    _maybeCloseOverlay();
   }
 
   /// Replace the last sheet of the stack to the new one
@@ -256,7 +257,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   /// if there is the last one of the sheet,
   /// the overlay has to be closed after pop upping the last one
-  void _maybeCloseOverlay() async {
+  Future<void> _maybeCloseOverlay() async {
     if (_sheetEntries.isEmpty) {
       _scrimAnimationController.reverse();
       await Future.delayed(
@@ -266,6 +267,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _overlayEntry = null;
       _overlayState = null;
     }
+    _sheetEntries.clear();
   }
 
   void _initOverlay() {
