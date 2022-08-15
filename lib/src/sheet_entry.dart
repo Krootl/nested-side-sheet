@@ -47,6 +47,7 @@ class SheetEntry<T> {
     required AnimatedWidget Function(Widget child, Animation<double> animation) transitionBuilder,
     required TickerProvider tickerProvider,
     required Duration animationDuration,
+    required Duration reverseDuration,
     required Widget sheet,
     required Completer<T?> completer,
     required Alignment alignment,
@@ -59,6 +60,7 @@ class SheetEntry<T> {
     final animationController = AnimationController(
       vsync: tickerProvider,
       duration: animationDuration,
+      reverseDuration: reverseDuration,
     );
 
     final animatedSheet = SlidingAnimationWidget(

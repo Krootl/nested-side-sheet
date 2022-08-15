@@ -13,12 +13,16 @@ class SheetWidget extends StatefulWidget {
     Key? key,
     required this.child,
     this.settleDuration = _kBaseSettleDuration,
+    this.reverseSettleDuration = _kBaseSettleDuration,
     this.scrimColor = Colors.black45,
     this.parentDecorationBuilder,
   }) : super(key: key);
 
-  /// the animation duration of showing/hiding a sheet
+  /// the animation duration of showing a sheet
   final Duration settleDuration;
+
+  /// the animation duration of hiding a sheet
+  final Duration reverseSettleDuration;
 
   /// a background color of the SheetWidget's overlay
   final Color scrimColor;
@@ -75,6 +79,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     _scrimAnimationController = AnimationController(
       vsync: this,
       duration: widget.settleDuration,
+      reverseDuration: widget.reverseSettleDuration,
     );
     _scrimColorAnimation = ColorTween(
       begin: Colors.transparent,
@@ -113,6 +118,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     DecorationBuilder? decorationBuilder,
     bool dismissible = true,
     Duration? animationDuration,
+    Duration? reverseDuration,
   }) async {
     if (!mounted) return null;
     final completer = Completer<T?>();
@@ -125,8 +131,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       decorationBuilder: decorationBuilder ?? widget.parentDecorationBuilder,
       alignment: alignment,
       dismissible: dismissible,
-      animationDuration: _scrimAnimationController.duration =
-          animationDuration ?? widget.settleDuration,
+      animationDuration: _setSettleDuration(animationDuration),
+      reverseDuration: _setReverseSettleDuration(reverseDuration),
     );
     _sheetEntries.add(newEntry);
 
@@ -211,6 +217,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     SheetTransitionBuilder? transitionBuilder,
     DecorationBuilder? decorationBuilder,
     Duration? animationDuration,
+    Duration? reverseDuration,
   }) async {
     assert(
       _sheetEntries.isNotEmpty,
@@ -230,8 +237,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       transitionBuilder: transitionBuilder ?? oldEntry.transitionBuilder,
       alignment: alignment ?? oldEntry.alignment,
       dismissible: oldEntry.dismissible,
-      animationDuration: _scrimAnimationController.duration =
-          animationDuration ?? widget.settleDuration,
+      animationDuration: _setSettleDuration(animationDuration),
+      reverseDuration: _setReverseSettleDuration(reverseDuration),
     );
 
     if (_overlayState?.mounted == true) {
@@ -266,8 +273,17 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _overlayEntry?.remove();
       _overlayEntry = null;
       _overlayState = null;
+
+      _setSettleDuration(null);
+      _setReverseSettleDuration(null);
     }
   }
+
+  Duration _setSettleDuration(Duration? duration) =>
+      _scrimAnimationController.duration = duration ?? widget.settleDuration;
+
+  Duration _setReverseSettleDuration(Duration? duration) =>
+      _scrimAnimationController.reverseDuration = duration ?? widget.reverseSettleDuration;
 
   void _initOverlay() {
     _overlayState = Overlay.of(context)
