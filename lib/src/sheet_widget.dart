@@ -286,41 +286,41 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
         state: this,
         child: Stack(children: [
           RepaintBoundary(child: widget.child),
-          ValueListenableBuilder<int>(
-            valueListenable: _sheetStateNotifier,
-            builder: (context, value, child) => AnimatedBuilder(
-              animation: _scrimColorAnimation,
-              builder: (ctx, child) => GestureDetector(
-                onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
-                child: Material(
-                  color: _scrimColorAnimation.value,
-                  child: _scrimColorAnimation.value == Colors.transparent
-                      ? const SizedBox.shrink()
-                      : child,
-                ),
+          AnimatedBuilder(
+            animation: _scrimColorAnimation,
+            builder: (ctx, child) => GestureDetector(
+              onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
+              child: Material(
+                color: _scrimColorAnimation.value,
+                child: _scrimColorAnimation.value == Colors.transparent
+                    ? const SizedBox.shrink()
+                    : child,
               ),
-              child: _sheetWidgetContent(),
             ),
+            child: _sheetWidgetContent(),
           ),
         ]),
       );
 
-  Widget _sheetWidgetContent() => Stack(
-        children: _sheetEntries.map((e) {
-          final ignore = e != _sheetEntries.last;
-          final sheet = GestureDetector(
-            onTap: () {},
-            child: Align(
-              alignment: e.alignment,
-              child: IgnorePointer(
-                ignoring: ignore,
-                child: e.slidingAnimationWidget,
+  Widget _sheetWidgetContent() => ValueListenableBuilder<int>(
+        valueListenable: _sheetStateNotifier,
+        builder: (context, value, child) => Stack(
+          children: _sheetEntries.map((e) {
+            final ignore = e != _sheetEntries.last;
+            final sheet = GestureDetector(
+              onTap: () {},
+              child: Align(
+                alignment: e.alignment,
+                child: IgnorePointer(
+                  ignoring: ignore,
+                  child: e.slidingAnimationWidget,
+                ),
               ),
-            ),
-          );
-          return RepaintBoundary(
-            child: e.decorationBuilder == null ? sheet : e.decorationBuilder!(sheet),
-          );
-        }).toList(),
+            );
+            return RepaintBoundary(
+              child: e.decorationBuilder == null ? sheet : e.decorationBuilder!(sheet),
+            );
+          }).toList(),
+        ),
       );
 }
