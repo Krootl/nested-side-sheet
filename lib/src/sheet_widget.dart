@@ -60,6 +60,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   late AnimationController _scrimAnimationController;
   late Animation<Color?> _scrimColorAnimation;
 
+  final _completerHistory = <Completer>[];
+
   /// the list of the sheet entries
   final _sheetEntries = <SheetEntry>[];
 
@@ -122,6 +124,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   }) async {
     if (!mounted) return null;
     final completer = Completer<T?>();
+    _completerHistory.add(completer);
 
     final newEntry = SheetEntry<T?>.createNewElement(
       index: _sheetEntries.length + 1,
@@ -157,7 +160,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
     for (final entry in _sheetEntries.reversed.toList()) {
       if (_sheetEntries.last != entry) {
-        _removeClearlySheet(entry, saveCompleter: firstCompleter == entry.completer);
+        _removeClearlySheet(entry);
       }
     }
 
@@ -194,7 +197,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
     for (final entry in _sheetEntries) {
       if (entry != lastEntry && entry != candidate) {
-        _removeClearlySheet(entry, saveCompleter: completer == entry.completer);
+        _removeClearlySheet(entry);
       }
     }
     _sheetStateNotifier.value++;
@@ -219,7 +222,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       await Future.delayed(
         _setReverseSettleDuration(sideSheet.animationController.reverseDuration),
       );
-      _removeClearlySheet(sideSheet, saveCompleter: completer == null);
+      _removeClearlySheet(sideSheet);
 
       _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
       await _maybeCloseOverlay();
@@ -272,9 +275,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     await Future.delayed(_scrimAnimationController.duration!);
     await Future.delayed(const Duration(milliseconds: 100));
 
-    // and remove an old sheetEntry from the stack, but save its completer
+    // and remove an old sheetEntry from the stack
     if (mounted == true) {
-      _removeClearlySheet(oldEntry, saveCompleter: true);
+      _removeClearlySheet(oldEntry);
       _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
     }
 
@@ -293,6 +296,14 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _sheetStateNotifier.value = 0;
       _setSettleDuration(null);
       _setReverseSettleDuration(null);
+
+      // invoke 'unused' completers and cleanup the history
+      for (final completer in _completerHistory) {
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      }
+      _completerHistory.clear();
     }
   }
 
@@ -303,9 +314,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _scrimAnimationController.reverseDuration = duration ?? widget.reverseSettleDuration;
 
   /// remove sheet's entry from the stack with disposing its animation controller
-  void _removeClearlySheet(SheetEntry entry, {required bool saveCompleter}) {
+  void _removeClearlySheet(SheetEntry entry) {
     entry.animationController.dispose();
-    if (!saveCompleter) entry.completer.complete();
     _sheetEntries.removeWhere((e) => e == entry);
   }
 
