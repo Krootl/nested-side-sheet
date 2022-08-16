@@ -124,7 +124,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     final completer = Completer<T?>();
 
     final newEntry = SheetEntry<T?>.createNewElement(
-      index: _sheetEntries.length - 1,
+      index: _sheetEntries.length + 1,
       transitionBuilder: transitionBuilder,
       tickerProvider: this,
       sheet: sideSheet,
