@@ -60,8 +60,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   late AnimationController _scrimAnimationController;
   late Animation<Color?> _scrimColorAnimation;
 
-  final _completerHistory = <Completer>[];
-
   /// the list of the sheet entries
   final _sheetEntries = <SheetEntry>[];
 
@@ -124,7 +122,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   }) async {
     if (!mounted) return null;
     final completer = Completer<T?>();
-    _completerHistory.add(completer);
 
     final newEntry = SheetEntry<T?>.createNewElement(
       index: _sheetEntries.length + 1,
@@ -296,14 +293,6 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _sheetStateNotifier.value = 0;
       _setSettleDuration(null);
       _setReverseSettleDuration(null);
-
-      // invoke 'unused' completers and cleanup the history
-      for (final completer in _completerHistory) {
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      }
-      _completerHistory.clear();
     }
   }
 
