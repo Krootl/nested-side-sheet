@@ -292,7 +292,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
               onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
               child: Material(
                 color: _scrimColorAnimation.value,
-                child: _scrimColorAnimation.value == Colors.transparent
+                child: _scrimAnimationController.value == 0
                     ? const SizedBox.shrink()
                     : child,
               ),
