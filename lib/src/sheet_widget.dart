@@ -168,11 +168,27 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   void popUntil<T extends Object?>(SheetPredicate predicate, [T? result]) async {
     if (_blockTouches) return;
+    final lastEntry = _sheetEntries.last;
+    final candidate = _sheetEntries.cast<SheetEntry?>().firstWhere(
+          (entry) => entry == null ? false : predicate(entry),
+          orElse: () => null,
+        );
+
+    /// nothing to find, close sheets
+    if (candidate == null) {
+      close();
+      return;
+    }
+
+    /// otherwise, making a magic!
     for (final entry in _sheetEntries) {
-      if (!predicate(entry)) {
-        _pop(result);
+      if (entry != lastEntry && entry != candidate) {
+        _removeClearlySheet(entry);
       }
     }
+    _sheetStateNotifier.value++;
+    await Future.delayed(const Duration(milliseconds: 17));
+    _pop(result);
   }
 
   void pop<T extends Object?>([T? result]) => _pop<T>(result);
@@ -292,9 +308,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
               onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
               child: Material(
                 color: _scrimColorAnimation.value,
-                child: _scrimAnimationController.value == 0
-                    ? const SizedBox.shrink()
-                    : child,
+                child: _scrimAnimationController.value == 0 ? const SizedBox.shrink() : child,
               ),
             ),
             child: _sheetWidgetContent(),

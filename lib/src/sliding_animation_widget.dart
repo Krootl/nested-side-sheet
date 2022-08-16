@@ -4,11 +4,13 @@ import 'package:krootl_flutter_side_menu/src/type_defs.dart';
 
 class SlidingAnimationWidget extends StatefulWidget {
   /// the guest of the program =)
+  /// A sheet which has been added by you in the push/pushReplace
   final Widget child;
 
-  /// add a sheet without animation
+  /// add a sheet with animation
   final bool initWithAnimation;
 
+  /// sheet's animation controller
   final AnimationController animationController;
 
   /// custom animation transition builder
