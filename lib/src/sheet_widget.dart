@@ -14,7 +14,7 @@ class SheetWidget extends StatefulWidget {
     required this.child,
     this.settleDuration = _kBaseSettleDuration,
     this.reverseSettleDuration = _kBaseSettleDuration,
-    this.scrimColor = Colors.black45,
+    this.scrimColor = Colors.black54,
     this.parentDecorationBuilder,
   }) : super(key: key);
 
@@ -51,9 +51,6 @@ class SheetWidget extends StatefulWidget {
 }
 
 class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin {
-  OverlayEntry? _overlayEntry;
-  OverlayState? _overlayState;
-
   /// prevent unnecessary touches while there is animating
   bool get _blockTouches => _sheetEntries.any(
         (element) => element.animationController.isAnimating,
@@ -66,12 +63,15 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   /// the list of the sheet entries
   final _sheetEntries = <SheetEntry>[];
 
+  /// notifies about the changing in the sheet's widget tree
+  final _sheetStateNotifier = ValueNotifier<int>(0);
+
   int currentSheetIndex(Widget child) {
-    final entriesList = _sheetEntries
-        .where((element) => !element.willBeRemoved)
-        .map((e) => e.slidingAnimationWidget.child)
-        .toList();
-    return entriesList.indexOf(child);
+    final firstWhereOrNull = _sheetEntries.cast<SheetEntry?>().firstWhere(
+          (element) => element?.slidingAnimationWidget.child == child,
+          orElse: () => null,
+        );
+    return firstWhereOrNull?.index ?? 1;
   }
 
   @override
@@ -124,6 +124,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     final completer = Completer<T?>();
 
     final newEntry = SheetEntry<T?>.createNewElement(
+      index: _sheetEntries.length + 1,
       transitionBuilder: transitionBuilder,
       tickerProvider: this,
       sheet: sideSheet,
@@ -136,11 +137,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     );
     _sheetEntries.add(newEntry);
 
-    /// if there is not any overlay, it will be created
-    if (_overlayEntry == null) _initOverlay();
-    if (_overlayState?.mounted == true) {
-      _overlayState?.setState(() {});
-    }
+    _scrimAnimationController.forward();
+    _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
 
     return completer.future;
   }
@@ -162,9 +160,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
         _removeClearlySheet(entry);
       }
     }
-    if (_overlayState?.mounted == true) {
-      _overlayState?.setState(() {});
-    }
+
+    _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
     await Future.delayed(const Duration(milliseconds: 17));
     _pop<T>(result, firstCompleter);
   }
@@ -197,9 +194,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       );
       _removeClearlySheet(sideSheet);
 
-      if (_overlayState?.mounted == true) {
-        _overlayState?.setState(() {});
-      }
+      _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
       await _maybeCloseOverlay();
 
       if (completer != null) {
@@ -227,10 +222,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     final oldEntry = _sheetEntries.last;
     final oldCompleter = oldEntry.completer as Completer<T?>;
 
-    oldEntry.willBeRemoved = true;
-
     final newEntry = SheetEntry<T?>.createNewElement(
       tickerProvider: this,
+      index: oldEntry.index,
       decorationBuilder: decorationBuilder ?? oldEntry.decorationBuilder,
       sheet: newSheet,
       completer: oldCompleter,
@@ -241,10 +235,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
     );
 
-    if (_overlayState?.mounted == true) {
+    if (mounted == true) {
       // add a new sheet entry
       _sheetEntries.add(newEntry);
-      _overlayState?.setState(() {});
+      _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
     }
 
     // waiting for the end of the animation of a [slidingAnimationWidget]
@@ -252,9 +246,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     await Future.delayed(const Duration(milliseconds: 100));
 
     // and remove an old sheetEntry from the stack
-    if (_overlayState?.mounted == true) {
+    if (mounted == true) {
       _removeClearlySheet(oldEntry);
-      _overlayState?.setState(() {});
+      _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
     }
 
     return oldCompleter.future;
@@ -268,10 +262,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       await Future.delayed(
         _scrimAnimationController.reverseDuration ?? widget.reverseSettleDuration,
       );
-      _overlayEntry?.remove();
-      _overlayEntry = null;
-      _overlayState = null;
 
+      _sheetStateNotifier.value = 0;
       _setSettleDuration(null);
       _setReverseSettleDuration(null);
     }
@@ -283,45 +275,37 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   Duration _setReverseSettleDuration(Duration? duration) =>
       _scrimAnimationController.reverseDuration = duration ?? widget.reverseSettleDuration;
 
-  void _initOverlay() {
-    _overlayState = Overlay.of(context)
-      ?..insert(
-        _overlayEntry = _buildOverlayEntry(),
-      );
-    _scrimAnimationController.forward();
-  }
-
   /// remove sheet's entry from the stack with disposing its animation controller
   void _removeClearlySheet(SheetEntry entry) {
     entry.animationController.dispose();
     _sheetEntries.removeWhere((e) => e == entry);
   }
 
-  /// showing an overlay with a custom nested navigation
-  OverlayEntry _buildOverlayEntry() => OverlayEntry(
-        builder: (ctx) => GestureDetector(
-          onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
-          child: RepaintBoundary(
-            child: InheritedSheetDataProvider(
-              state: this,
-              child: AnimatedBuilder(
-                animation: _scrimColorAnimation,
-                builder: (ctx, child) => Material(
-                  color: _scrimColorAnimation.value,
-                  child: child,
-                ),
-                child: RepaintBoundary(
-                  child: _overlayContent(),
-                ),
+  @override
+  Widget build(BuildContext context) => InheritedSheetDataProvider(
+        state: this,
+        child: Stack(children: [
+          RepaintBoundary(child: widget.child),
+          AnimatedBuilder(
+            animation: _scrimColorAnimation,
+            builder: (ctx, child) => GestureDetector(
+              onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
+              child: Material(
+                color: _scrimColorAnimation.value,
+                child: _scrimColorAnimation.value == Colors.transparent
+                    ? const SizedBox.shrink()
+                    : child,
               ),
             ),
+            child: _sheetWidgetContent(),
           ),
-        ),
+        ]),
       );
 
-  Widget _overlayContent() => Stack(
-        children: [
-          ..._sheetEntries.map((e) {
+  Widget _sheetWidgetContent() => ValueListenableBuilder<int>(
+        valueListenable: _sheetStateNotifier,
+        builder: (context, value, child) => Stack(
+          children: _sheetEntries.map((e) {
             final ignore = e != _sheetEntries.last;
             final sheet = GestureDetector(
               onTap: () {},
@@ -329,22 +313,14 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
                 alignment: e.alignment,
                 child: IgnorePointer(
                   ignoring: ignore,
-                  child: RepaintBoundary(
-                    child: e.slidingAnimationWidget,
-                  ),
+                  child: e.slidingAnimationWidget,
                 ),
               ),
             );
             return RepaintBoundary(
               child: e.decorationBuilder == null ? sheet : e.decorationBuilder!(sheet),
             );
-          }),
-        ],
-      );
-
-  @override
-  Widget build(BuildContext context) => InheritedSheetDataProvider(
-        state: this,
-        child: widget.child,
+          }).toList(),
+        ),
       );
 }

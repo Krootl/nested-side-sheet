@@ -8,6 +8,9 @@ class SheetEntry<T> {
   /// unique value
   final String id;
 
+  /// the last known index
+  final int index;
+
   /// the wrapped widget
   final SlidingAnimationWidget slidingAnimationWidget;
 
@@ -29,10 +32,9 @@ class SheetEntry<T> {
   /// /// The decoration builder to paint behind the [slidingAnimationWidget].
   final DecorationBuilder? decorationBuilder;
 
-  bool willBeRemoved;
-
   SheetEntry({
     required this.id,
+    required this.index,
     required this.slidingAnimationWidget,
     required this.animationController,
     required this.completer,
@@ -40,7 +42,6 @@ class SheetEntry<T> {
     required this.alignment,
     required this.dismissible,
     required this.decorationBuilder,
-    this.willBeRemoved = false,
   });
 
   factory SheetEntry.createNewElement({
@@ -52,8 +53,9 @@ class SheetEntry<T> {
     required Completer<T?> completer,
     required Alignment alignment,
     required DecorationBuilder? decorationBuilder,
-    bool initWithAnimation = true,
     required bool dismissible,
+    required int index,
+    bool initWithAnimation = true,
   }) {
     final uniqueId = UniqueKey().toString();
 
@@ -73,6 +75,7 @@ class SheetEntry<T> {
 
     return SheetEntry<T>(
       id: uniqueId,
+      index: index,
       slidingAnimationWidget: animatedSheet,
       animationController: animationController,
       completer: completer,
@@ -92,8 +95,9 @@ class SheetEntry<T> {
       other is SheetEntry &&
           runtimeType == other.runtimeType &&
           id == other.id &&
+          index == other.index &&
           alignment == other.alignment;
 
   @override
-  int get hashCode => id.hashCode ^ alignment.hashCode;
+  int get hashCode => id.hashCode ^ index.hashCode ^ alignment.hashCode;
 }
