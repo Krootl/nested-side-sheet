@@ -181,6 +181,15 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     }
 
     /// otherwise, making a magic!
+    Completer? completer;
+    try {
+      final candidateIndex = _sheetEntries.indexOf(candidate);
+      final preCandidate = _sheetEntries[candidateIndex + 1];
+      completer = preCandidate.completer;
+    } catch (_) {
+      /*ignore*/
+    }
+
     for (final entry in _sheetEntries) {
       if (entry != lastEntry && entry != candidate) {
         _removeClearlySheet(entry);
@@ -188,7 +197,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     }
     _sheetStateNotifier.value++;
     await Future.delayed(const Duration(milliseconds: 17));
-    _pop(result);
+    _pop(result, completer);
   }
 
   void pop<T extends Object?>([T? result]) => _pop<T>(result);
