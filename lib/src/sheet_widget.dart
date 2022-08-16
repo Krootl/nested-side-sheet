@@ -188,7 +188,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     }
     _sheetStateNotifier.value++;
     await Future.delayed(const Duration(milliseconds: 17));
-    _pop(result);
+    _pop(result, candidate.completer);
   }
 
   void pop<T extends Object?>([T? result]) => _pop<T>(result);
