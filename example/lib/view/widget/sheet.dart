@@ -29,7 +29,7 @@ class _SheetState extends State<Sheet> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    showBackButton ??= SheetWidget.of(context).currentSheetIndex(widget) > 0;
+    showBackButton ??= SheetWidget.of(context).currentSheetIndex(widget) > 1;
   }
 
   @override

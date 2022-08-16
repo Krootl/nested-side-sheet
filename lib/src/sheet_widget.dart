@@ -60,6 +60,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   late AnimationController _scrimAnimationController;
   late Animation<Color?> _scrimColorAnimation;
 
+  final _completerHistory = <Completer>[];
+
   /// the list of the sheet entries
   final _sheetEntries = <SheetEntry>[];
 
@@ -122,6 +124,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   }) async {
     if (!mounted) return null;
     final completer = Completer<T?>();
+    _completerHistory.add(completer);
 
     final newEntry = SheetEntry<T?>.createNewElement(
       index: _sheetEntries.length + 1,
@@ -168,11 +171,38 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
   void popUntil<T extends Object?>(SheetPredicate predicate, [T? result]) async {
     if (_blockTouches) return;
+    final lastEntry = _sheetEntries.last;
+    final candidate = _sheetEntries.cast<SheetEntry?>().firstWhere(
+          (entry) => entry == null ? false : predicate(entry),
+          orElse: () => null,
+        );
+
+    /// nothing to find, close sheets
+    if (candidate == null) {
+      close();
+      return;
+    }
+
+    /// otherwise, making a magic!
+    Completer? completer;
+    try {
+      // find the candidate index
+      final candidateIndex = _sheetEntries.indexOf(candidate);
+      // find the completer, which has been created by the candidate sheet
+      final preCandidate = _sheetEntries[candidateIndex + 1];
+      completer = preCandidate.completer;
+    } catch (_) {
+      /*ignore*/
+    }
+
     for (final entry in _sheetEntries) {
-      if (!predicate(entry)) {
-        _pop(result);
+      if (entry != lastEntry && entry != candidate) {
+        _removeClearlySheet(entry);
       }
     }
+    _sheetStateNotifier.value++;
+    await Future.delayed(const Duration(milliseconds: 17));
+    _pop(result, completer);
   }
 
   void pop<T extends Object?>([T? result]) => _pop<T>(result);
@@ -266,6 +296,14 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _sheetStateNotifier.value = 0;
       _setSettleDuration(null);
       _setReverseSettleDuration(null);
+
+      // invoke 'unused' completers and cleanup the history
+      for (final completer in _completerHistory) {
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      }
+      _completerHistory.clear();
     }
   }
 
@@ -292,9 +330,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
               onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
               child: Material(
                 color: _scrimColorAnimation.value,
-                child: _scrimAnimationController.value == 0
-                    ? const SizedBox.shrink()
-                    : child,
+                child: _scrimAnimationController.value == 0 ? const SizedBox.shrink() : child,
               ),
             ),
             child: _sheetWidgetContent(),
