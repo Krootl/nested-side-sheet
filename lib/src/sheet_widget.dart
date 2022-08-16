@@ -51,8 +51,9 @@ class SheetWidget extends StatefulWidget {
 }
 
 class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin {
-  OverlayEntry? _overlayEntry;
-  OverlayState? _overlayState;
+  // OverlayEntry? _overlayEntry;
+  // OverlayState? _overlayState;
+  final sheetStateNotifier = ValueNotifier<int>(0);
 
   /// prevent unnecessary touches while there is animating
   bool get _blockTouches => _sheetEntries.any(
@@ -137,10 +138,11 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     _sheetEntries.add(newEntry);
 
     /// if there is not any overlay, it will be created
-    if (_overlayEntry == null) _initOverlay();
-    if (_overlayState?.mounted == true) {
-      _overlayState?.setState(() {});
-    }
+    // if (_overlayEntry == null) _initOverlay();
+    // if (_overlayState?.mounted == true) {
+    //   _overlayState?.setState(() {});
+    // }
+    sheetStateNotifier.value = sheetStateNotifier.value + 1;
 
     return completer.future;
   }
@@ -162,9 +164,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
         _removeClearlySheet(entry);
       }
     }
-    if (_overlayState?.mounted == true) {
-      _overlayState?.setState(() {});
-    }
+    // if (_overlayState?.mounted == true) {
+    //   _overlayState?.setState(() {});
+    // }
+    sheetStateNotifier.value = sheetStateNotifier.value + 1;
     await Future.delayed(const Duration(milliseconds: 17));
     _pop<T>(result, firstCompleter);
   }
@@ -197,9 +200,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       );
       _removeClearlySheet(sideSheet);
 
-      if (_overlayState?.mounted == true) {
-        _overlayState?.setState(() {});
-      }
+      // if (_overlayState?.mounted == true) {
+      //   _overlayState?.setState(() {});
+      // }
+      sheetStateNotifier.value = sheetStateNotifier.value + 1;
       await _maybeCloseOverlay();
 
       if (completer != null) {
@@ -241,10 +245,11 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
     );
 
-    if (_overlayState?.mounted == true) {
+    if (mounted == true) {
       // add a new sheet entry
       _sheetEntries.add(newEntry);
-      _overlayState?.setState(() {});
+      sheetStateNotifier.value = sheetStateNotifier.value + 1;
+      // _overlayState?.setState(() {});
     }
 
     // waiting for the end of the animation of a [slidingAnimationWidget]
@@ -252,9 +257,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     await Future.delayed(const Duration(milliseconds: 100));
 
     // and remove an old sheetEntry from the stack
-    if (_overlayState?.mounted == true) {
+    if (mounted == true) {
       _removeClearlySheet(oldEntry);
-      _overlayState?.setState(() {});
+      // _overlayState?.setState(() {});
+      sheetStateNotifier.value = sheetStateNotifier.value + 1;
     }
 
     return oldCompleter.future;
@@ -268,9 +274,9 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       await Future.delayed(
         _scrimAnimationController.reverseDuration ?? widget.reverseSettleDuration,
       );
-      _overlayEntry?.remove();
-      _overlayEntry = null;
-      _overlayState = null;
+      // _overlayEntry?.remove();
+      // _overlayEntry = null;
+      // _overlayState = null;
 
       _setSettleDuration(null);
       _setReverseSettleDuration(null);
@@ -284,10 +290,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       _scrimAnimationController.reverseDuration = duration ?? widget.reverseSettleDuration;
 
   void _initOverlay() {
-    _overlayState = Overlay.of(context)
-      ?..insert(
-        _overlayEntry = _buildOverlayEntry(),
-      );
+    // _overlayState = Overlay.of(context)
+    //   ?..insert(
+    //     _overlayEntry = _buildOverlayEntry(),
+    //   );
     _scrimAnimationController.forward();
   }
 
@@ -345,6 +351,29 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   @override
   Widget build(BuildContext context) => InheritedSheetDataProvider(
         state: this,
-        child: widget.child,
+        child: Stack(children: [
+          RepaintBoundary(child: widget.child),
+          ValueListenableBuilder<int>(
+            valueListenable: sheetStateNotifier,
+            builder: (context, value, child) => Stack(
+              children: _sheetEntries.map((e) {
+                final ignore = e != _sheetEntries.last;
+                final sheet = GestureDetector(
+                  onTap: () {},
+                  child: Align(
+                    alignment: e.alignment,
+                    child: IgnorePointer(
+                      ignoring: ignore,
+                      child: e.slidingAnimationWidget,
+                    ),
+                  ),
+                );
+                return RepaintBoundary(
+                  child: e.decorationBuilder == null ? sheet : e.decorationBuilder!(sheet),
+                );
+              }).toList(),
+            ),
+          ),
+        ]),
       );
 }
