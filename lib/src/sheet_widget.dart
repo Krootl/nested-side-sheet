@@ -161,7 +161,7 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       }
     }
 
-    _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
+    _sheetStateNotifier.value += 1;
     await Future.delayed(const Duration(milliseconds: 17));
     _pop<T>(result, firstCompleter);
   }
@@ -192,12 +192,14 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       /*ignore*/
     }
 
-    for (final entry in _sheetEntries) {
-      if (entry != lastEntry && entry != candidate) {
+    for (final entry in _sheetEntries.reversed.toList()) {
+      if (entry != candidate && entry != lastEntry) {
         _removeClearlySheet(entry);
+      } else if (predicate(entry)) {
+        break;
       }
     }
-    _sheetStateNotifier.value++;
+    _sheetStateNotifier.value += 1;
     await Future.delayed(const Duration(milliseconds: 17));
     _pop(result, completer);
   }
