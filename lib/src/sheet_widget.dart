@@ -192,8 +192,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       /*ignore*/
     }
 
-    for (final entry in _sheetEntries) {
-      if (!predicate(entry) && entry != lastEntry) {
+    for (final entry in _sheetEntries.reversed.toList()) {
+      if (entry != candidate && entry != lastEntry) {
         _removeClearlySheet(entry);
       } else if (predicate(entry)) {
         break;
