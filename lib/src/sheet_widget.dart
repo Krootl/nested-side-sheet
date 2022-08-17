@@ -195,6 +195,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     for (final entry in _sheetEntries) {
       if (entry != lastEntry && entry != candidate) {
         _removeClearlySheet(entry);
+      } else {
+        break;
       }
     }
     _sheetStateNotifier.value++;
