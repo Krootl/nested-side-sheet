@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  krootl_flutter_side_menu:
+  nested_side_sheet:
     path: ../
 
 dev_dependencies:

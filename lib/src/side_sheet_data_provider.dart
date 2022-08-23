@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:krootl_flutter_side_menu/src/sheet_widget.dart';
+import 'package:nested_side_sheet/src/side_sheet_host.dart';
 
 class InheritedSheetDataProvider extends InheritedWidget {
-  final SheetWidgetState state;
+  final NestedSideSheetState state;
 
   const InheritedSheetDataProvider({
     Key? key,

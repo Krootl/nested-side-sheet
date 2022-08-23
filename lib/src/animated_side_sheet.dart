@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:krootl_flutter_side_menu/src/measure_size.dart';
-import 'package:krootl_flutter_side_menu/src/type_defs.dart';
+import 'package:nested_side_sheet/src/side_sheet_host.dart';
+import 'package:nested_side_sheet/src/utils/measure_size.dart';
 
-class SlidingAnimationWidget extends StatefulWidget {
-  /// the guest of the program =)
-  /// A sheet which has been added by you in the push/pushReplace
+class AnimatedSideSheet extends StatefulWidget {
+  /// Highlight of the program - the content of the side sheet.
   final Widget child;
 
-  /// add a sheet with animation
+  /// Add a sheet with animation
   final bool initWithAnimation;
 
-  /// sheet's animation controller
+  /// Sheet animation controller
   final AnimationController animationController;
 
-  /// custom animation transition builder
-  final SheetTransitionBuilder transitionBuilder;
+  /// Custom animation transition builder
+  final SideSheetTransitionBuilder transitionBuilder;
 
-  const SlidingAnimationWidget({
+  const AnimatedSideSheet({
     Key? key,
     required this.child,
     required this.animationController,
@@ -25,10 +24,10 @@ class SlidingAnimationWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<SlidingAnimationWidget> createState() => _SlidingAnimationWidgetState();
+  State<AnimatedSideSheet> createState() => _AnimatedSideSheetState();
 }
 
-class _SlidingAnimationWidgetState extends State<SlidingAnimationWidget>
+class _AnimatedSideSheetState extends State<AnimatedSideSheet>
     with TickerProviderStateMixin {
   late ValueNotifier<Size?> sheetSizeNotifier;
 

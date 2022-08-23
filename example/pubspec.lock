@@ -60,13 +60,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  krootl_flutter_side_menu:
-    dependency: "direct main"
-    description:
-      path: ".."
-      relative: true
-    source: path
-    version: "0.0.1"
   matcher:
     dependency: transitive
     description:
@@ -88,6 +81,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.7.0"
+  nested_side_sheet:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "0.0.1"
   path:
     dependency: transitive
     description:

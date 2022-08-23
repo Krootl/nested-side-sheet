@@ -1,78 +1,81 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:krootl_flutter_side_menu/src/inherited_sheet_data_provider.dart';
-import 'package:krootl_flutter_side_menu/src/sheet_entry.dart';
-import 'package:krootl_flutter_side_menu/src/type_defs.dart';
+import 'package:nested_side_sheet/src/side_sheet_data_provider.dart';
+import 'package:nested_side_sheet/src/side_sheet_entry.dart';
 
-/// default animation duration of showing/hiding a sheet
+/// Creates an [AnimatedWidget] that is used for side sheet navigation animation.
+typedef SideSheetTransitionBuilder = AnimatedWidget Function(
+  Widget child,
+  Animation<double> position,
+);
+
+/// Creates a decoration widget which helps creating custom design.
+typedef DecorationBuilder = Widget Function(Widget child);
+
+/// Signature for the [NestedSideSheetState.popUntil] predicate argument.
+typedef SheetPredicate = bool Function(SideSheetEntry<dynamic> entry);
+
+/// Default animation duration for navigation animation.
 const _kBaseSettleDuration = Duration(milliseconds: 267);
 
-class SheetWidget extends StatefulWidget {
-  const SheetWidget({
+class NestedSideSheet extends StatefulWidget {
+  const NestedSideSheet({
     Key? key,
     required this.child,
     this.settleDuration = _kBaseSettleDuration,
     this.reverseSettleDuration = _kBaseSettleDuration,
     this.scrimColor = Colors.black54,
-    this.parentDecorationBuilder,
+    this.decorationBuilder,
   }) : super(key: key);
 
-  /// the animation duration of showing a sheet
+  /// How long forward navigation animation should last.
   final Duration settleDuration;
 
-  /// the animation duration of hiding a sheet
+  /// How long reverse navigation animation should last.
   final Duration reverseSettleDuration;
 
-  /// a background color of the SheetWidget's overlay
+  /// The color of the scrim that is applied when the side sheet is open.
   final Color scrimColor;
 
-  /// wrap your top level widget to the [SheetWidget]
-  /// of your widget tree for finding [SheetWidgetState] in the widget's tree
+  /// The main content of the screen. Its widget tree will have an access to [NestedSideSheetState].
   final Widget child;
 
-  /// the custom widget for customizing a background view of the sheets.
-  final DecorationBuilder? parentDecorationBuilder;
+  /// A decoration widget builder which helps creating custom design.
+  final DecorationBuilder? decorationBuilder;
 
-  static SheetWidgetState of(BuildContext context) {
-    final inheritedElement =
-        context.dependOnInheritedWidgetOfExactType<InheritedSheetDataProvider>();
-    if (inheritedElement?.state != null) {
-      return inheritedElement!.state;
+  static NestedSideSheetState of(BuildContext context) {
+    final state = context.dependOnInheritedWidgetOfExactType<InheritedSheetDataProvider>()?.state;
+    if (state != null) {
+      return state;
     } else {
-      throw Exception(
-        'Cannot find SheetWidgetState in the context.',
-      );
+      throw Exception('Cannot find SideSheetHostState in the context.');
     }
   }
 
   @override
-  State<SheetWidget> createState() => SheetWidgetState();
+  State<NestedSideSheet> createState() => NestedSideSheetState();
 }
 
-class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin {
-  /// prevent unnecessary touches while there is animating
-  bool get _blockTouches => _sheetEntries.any(
-        (element) => element.animationController.isAnimating,
-      );
+class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderStateMixin {
+  /// Prevent unnecessary gestures while animation is active.
+  bool get _blockGestures => _sheetEntries.any((e) => e.animationController.isAnimating);
 
-  /// a background color
+  /// The color of the scrim that is applied when the side sheet is open.
   late AnimationController _scrimAnimationController;
   late Animation<Color?> _scrimColorAnimation;
 
-  /// the list of the sheet entries
-  final _sheetEntries = <SheetEntry>[];
+  /// The list of the side sheet entries.
+  final _sheetEntries = <SideSheetEntry>[];
 
-  /// notifies about the changing in the sheet's widget tree
+  /// Notifies about any changes in the side sheets widget tree.
   final _sheetStateNotifier = ValueNotifier<int>(0);
 
-  int currentSheetIndex(Widget child) {
-    final firstWhereOrNull = _sheetEntries.cast<SheetEntry?>().firstWhere(
-          (element) => element?.slidingAnimationWidget.child == child,
-          orElse: () => null,
-        );
-    return firstWhereOrNull?.index ?? 1;
-  }
+  void _notifyStateChange() => _sheetStateNotifier.value += 1;
+
+  int indexOf(Widget sheet) =>
+      _sheetEntries.firstWhereOrNull((e) => e.animatedSideSheet.child == sheet)?.index ?? -1;
 
   @override
   void initState() {
@@ -88,15 +91,15 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     super.initState();
   }
 
-  /// add a sheet to the stack of widgets from the right side
+  /// Pre-made function to push the given sheet onto the host from the right side of the screen.
   Future<T?> pushRight<T extends Object?>(
-    Widget sideSheet, {
+    Widget sheet, {
     bool dismissible = true,
     DecorationBuilder? decorationBuilder,
     Duration? animationDuration,
   }) =>
       push<T>(
-        sideSheet,
+        sheet,
         alignment: Alignment.centerRight,
         transitionBuilder: (child, animation) => SlideTransition(
           position: animation.drive(
@@ -110,10 +113,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
             animationDuration ?? widget.settleDuration,
       );
 
-  /// add a sheet to the stack of widgets with custom transition
+  /// Push the given sheet onto the navigation stack.
   Future<T?> push<T extends Object?>(
-    Widget sideSheet, {
-    required SheetTransitionBuilder transitionBuilder,
+    Widget sheet, {
+    required SideSheetTransitionBuilder transitionBuilder,
     required Alignment alignment,
     DecorationBuilder? decorationBuilder,
     bool dismissible = true,
@@ -123,13 +126,13 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     if (!mounted) return null;
     final completer = Completer<T?>();
 
-    final newEntry = SheetEntry<T?>.createNewElement(
-      index: _sheetEntries.length + 1,
+    final newEntry = SideSheetEntry<T?>.createNewElement(
+      index: _sheetEntries.isEmpty ? 0 : _sheetEntries.length + 1,
       transitionBuilder: transitionBuilder,
       tickerProvider: this,
-      sheet: sideSheet,
+      sheet: sheet,
       completer: completer,
-      decorationBuilder: decorationBuilder ?? widget.parentDecorationBuilder,
+      decorationBuilder: decorationBuilder ?? widget.decorationBuilder,
       alignment: alignment,
       dismissible: dismissible,
       animationDuration: _setSettleDuration(animationDuration),
@@ -138,54 +141,62 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     _sheetEntries.add(newEntry);
 
     _scrimAnimationController.forward();
-    _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
+    _notifyStateChange();
 
     return completer.future;
   }
 
-  /// Close all sheets in the stack
+  /// Clears all the sheets from the navigation stack.
+  /// Topmost widget is closed with animation and its result is returned.
   void close<T extends Object?>([T? result]) async {
-    assert(
-      _sheetEntries.isNotEmpty,
-      'Nothing to close. Firstly, you need to add the first sheet by the push method',
-    );
-    if (_blockTouches) return;
+    if (_sheetEntries.isEmpty) {
+      throw StateError('No active sheets to close.');
+    } else if (_blockGestures) {
+      return;
+    }
 
-    // find the first completer of the sheet stack and make it as completed
-    // for returning a value to the initial point of sheets
+    // Find the first completer in the navigation stack
+    // and use it to return result all the way back.
     final firstCompleter = _sheetEntries.first.completer;
 
     for (final entry in _sheetEntries.reversed.toList()) {
       if (_sheetEntries.last != entry) {
-        _removeClearlySheet(entry);
+        _removeSheetSilently(entry);
       }
     }
 
-    _sheetStateNotifier.value += 1;
+    _notifyStateChange();
     await Future.delayed(const Duration(milliseconds: 17));
     _pop<T>(result, firstCompleter);
   }
 
+  /// Clears the sheets from the navigation stack until 'predicate' function returns true.
+  /// The top-most widget is closed with animation and its result is returned.
   void popUntil<T extends Object?>(SheetPredicate predicate, [T? result]) async {
-    if (_blockTouches) return;
+    if (_sheetEntries.isEmpty) {
+      throw StateError('No active sheets to pop.');
+    } else if (_blockGestures) {
+      return;
+    }
+
     final lastEntry = _sheetEntries.last;
-    final candidate = _sheetEntries.cast<SheetEntry?>().firstWhere(
+    final candidate = _sheetEntries.cast<SideSheetEntry?>().firstWhere(
           (entry) => entry == null ? false : predicate(entry),
           orElse: () => null,
         );
 
-    /// nothing to find, close sheets
+    // Nothing found, just close all the sheets.
     if (candidate == null) {
       close();
       return;
     }
 
-    /// otherwise, making a magic!
+    // Otherwise, pop until candidate sheet.
     Completer? completer;
     try {
-      // find the candidate index
+      // Find the candidate index.
       final candidateIndex = _sheetEntries.indexOf(candidate);
-      // find the completer, which has been created by the candidate sheet
+      // Find the completer, that was created by the candidate sheet.
       final preCandidate = _sheetEntries[candidateIndex + 1];
       completer = preCandidate.completer;
     } catch (_) {
@@ -194,25 +205,26 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
 
     for (final entry in _sheetEntries.reversed.toList()) {
       if (entry != candidate && entry != lastEntry) {
-        _removeClearlySheet(entry);
+        _removeSheetSilently(entry);
       } else if (predicate(entry)) {
         break;
       }
     }
-    _sheetStateNotifier.value += 1;
+    _notifyStateChange();
     await Future.delayed(const Duration(milliseconds: 17));
     _pop(result, completer);
   }
 
+  /// Pop the top-most sheet off the navigation stack.
   void pop<T extends Object?>([T? result]) => _pop<T>(result);
 
-  /// Remove the last sheet of the stack
+  /// Pop the top-most sheet off the navigation stack.
   void _pop<T extends Object?>([T? result, Completer? completer]) async {
-    assert(
-      _sheetEntries.isNotEmpty,
-      'Nothing to pop. Firstly, you need to add the first sheet by the push method',
-    );
-    if (_blockTouches) return;
+    if (_sheetEntries.isEmpty) {
+      throw StateError('No active sheets to pop.');
+    } else if (_blockGestures) {
+      return;
+    }
 
     if (_sheetEntries.isNotEmpty) {
       final sideSheet = _sheetEntries.last;
@@ -221,10 +233,10 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       await Future.delayed(
         _setReverseSettleDuration(sideSheet.animationController.reverseDuration),
       );
-      _removeClearlySheet(sideSheet);
+      _removeSheetSilently(sideSheet);
 
-      _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
-      await _maybeCloseOverlay();
+      _notifyStateChange();
+      await _maybeRemoveOverlay();
 
       if (completer != null) {
         completer.complete(result);
@@ -234,28 +246,29 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
     }
   }
 
-  /// Replace the last sheet of the stack to the new one
-  Future<T?> pushReplace<T extends Object?>(
-    Widget newSheet, {
+  /// Replace the current sheet of the navigation stack
+  /// by pushing the given sheet and then disposing the previous
+  /// sheet once the new sheet has finished animating in.
+  Future<T?> pushReplacement<T extends Object?>(
+    Widget sheet, {
     Alignment? alignment,
-    SheetTransitionBuilder? transitionBuilder,
+    SideSheetTransitionBuilder? transitionBuilder,
     DecorationBuilder? decorationBuilder,
     Duration? animationDuration,
     Duration? reverseAnimationDuration,
   }) async {
-    assert(
-      _sheetEntries.isNotEmpty,
-      'Nothing to replace. Firstly, you need to push a sheet to the stack of widget',
-    );
+    if (_sheetEntries.isEmpty) {
+      throw StateError('No active sheets to replace.');
+    }
 
     final oldEntry = _sheetEntries.last;
     final oldCompleter = oldEntry.completer as Completer<T?>;
 
-    final newEntry = SheetEntry<T?>.createNewElement(
+    final newEntry = SideSheetEntry<T?>.createNewElement(
       tickerProvider: this,
       index: oldEntry.index,
       decorationBuilder: decorationBuilder ?? oldEntry.decorationBuilder,
-      sheet: newSheet,
+      sheet: sheet,
       completer: oldCompleter,
       transitionBuilder: transitionBuilder ?? oldEntry.transitionBuilder,
       alignment: alignment ?? oldEntry.alignment,
@@ -264,35 +277,33 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
       reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
     );
 
-    if (mounted == true) {
-      // add a new sheet entry
+    if (mounted) {
       _sheetEntries.add(newEntry);
-      _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
+      _notifyStateChange();
     }
 
-    // waiting for the end of the animation of a [slidingAnimationWidget]
+    // Wait for the end of the sheet navigation animation.
     await Future.delayed(_scrimAnimationController.duration!);
     await Future.delayed(const Duration(milliseconds: 100));
 
-    // and remove an old sheetEntry from the stack
-    if (mounted == true) {
-      _removeClearlySheet(oldEntry);
-      _sheetStateNotifier.value = _sheetStateNotifier.value + 1;
+    // Now remove the old sheet entry from the navigation stack.
+    if (mounted) {
+      _removeSheetSilently(oldEntry);
+      _notifyStateChange();
     }
 
     return oldCompleter.future;
   }
 
-  /// if there is the last one of the sheet,
-  /// the overlay has to be closed after pop upping the last one
-  Future<void> _maybeCloseOverlay() async {
+  /// Remove scrim overlay if the navigation stack is empty.
+  Future<void> _maybeRemoveOverlay() async {
     if (_sheetEntries.isEmpty) {
       _scrimAnimationController.reverse();
       await Future.delayed(
         _scrimAnimationController.reverseDuration ?? widget.reverseSettleDuration,
       );
 
-      _sheetStateNotifier.value = 0;
+      _notifyStateChange();
       _setSettleDuration(null);
       _setReverseSettleDuration(null);
     }
@@ -304,8 +315,8 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
   Duration _setReverseSettleDuration(Duration? duration) =>
       _scrimAnimationController.reverseDuration = duration ?? widget.reverseSettleDuration;
 
-  /// remove sheet's entry from the stack with disposing its animation controller
-  void _removeClearlySheet(SheetEntry entry) {
+  /// Remove sheet entry from the navigation stack while disposing its animation controller.
+  void _removeSheetSilently(SideSheetEntry entry) {
     entry.animationController.dispose();
     _sheetEntries.removeWhere((e) => e == entry);
   }
@@ -340,12 +351,12 @@ class SheetWidgetState extends State<SheetWidget> with TickerProviderStateMixin 
                 alignment: e.alignment,
                 child: IgnorePointer(
                   ignoring: ignore,
-                  child: e.slidingAnimationWidget,
+                  child: e.animatedSideSheet,
                 ),
               ),
             );
             return RepaintBoundary(
-              child: e.decorationBuilder == null ? sheet : e.decorationBuilder!(sheet),
+              child: e.decorationBuilder?.call(sheet) ?? sheet,
             );
           }).toList(),
         ),

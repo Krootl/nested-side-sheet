@@ -15,45 +15,14 @@ class HomeCard extends StatelessWidget {
   final double? height;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) => Stack(
-          children: [
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: Scrollbar(
-                scrollbarOrientation: ScrollbarOrientation.bottom,
-                child: SingleChildScrollView(
-                  primary: true,
-                  scrollDirection: Axis.horizontal,
-                  child: content(
-                    context,
-                    pageWidth: constraints.maxWidth,
-                    pageHeight: constraints.minHeight,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-
-  Widget content(
-    BuildContext context, {
-    required double pageWidth,
-    required double pageHeight,
-  }) =>
-      Container(
-        constraints: BoxConstraints(
-          maxWidth: pageWidth - 60,
-          minHeight: height ?? pageHeight,
-        ),
-        margin: EdgeInsets.only(top: 60),
-        clipBehavior: Clip.hardEdge,
+  Widget build(BuildContext context) => Container(
+        margin: EdgeInsets.only(top: 48, right: 48),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: backgroundColor,
           boxShadow: shadows,
           borderRadius: BorderRadius.only(
-            topRight: Radius.circular(40),
+            topRight: Radius.circular(24),
           ),
         ),
         child: child,
