@@ -127,7 +127,7 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
     final completer = Completer<T?>();
 
     final newEntry = SideSheetEntry<T?>.createNewElement(
-      index: _sheetEntries.isEmpty ? 0 : _sheetEntries.length + 1,
+      index: _sheetEntries.length,
       transitionBuilder: transitionBuilder,
       tickerProvider: this,
       sheet: sheet,
