@@ -1,41 +1,41 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:krootl_flutter_side_menu/src/sliding_animation_widget.dart';
-import 'package:krootl_flutter_side_menu/src/type_defs.dart';
+import 'package:nested_side_sheet/src/side_sheet_host.dart';
+import 'package:nested_side_sheet/src/animated_side_sheet.dart';
 
-class SheetEntry<T> {
-  /// unique value
-  final String id;
+class SideSheetEntry<T> {
+  /// Unique identifier of the side sheet in the navigation stack.
+  final UniqueKey id;
 
-  /// the last known index
+  /// Last known index of the side sheet in the navigation stack.
   final int index;
 
-  /// the wrapped widget
-  final SlidingAnimationWidget slidingAnimationWidget;
+  /// Side sheet content.
+  final AnimatedSideSheet animatedSideSheet;
 
-  /// the sheet's controller
+  /// Side sheet navigation animation controller.
   final AnimationController animationController;
 
-  /// custom animation transition builder
-  final SheetTransitionBuilder transitionBuilder;
+  /// Side sheet navigation animation custom transition builder.
+  final SideSheetTransitionBuilder transitionBuilder;
 
-  /// a unique completer for getting a feature result
+  /// Unique completer for getting navigation result.
   final Completer<T?> completer;
 
-  /// which the side do you want to animate a sheet
+  /// Controls navigation transition animation alignment.
   final Alignment alignment;
 
-  /// an ability to close sheets by the tapping on the free space
+  /// Controls whether the side sheet can be dismissed by clicking outside.
   final bool dismissible;
 
-  /// /// The decoration builder to paint behind the [slidingAnimationWidget].
+  /// A decoration widget builder which helps creating custom design.
   final DecorationBuilder? decorationBuilder;
 
-  SheetEntry({
+  SideSheetEntry({
     required this.id,
     required this.index,
-    required this.slidingAnimationWidget,
+    required this.animatedSideSheet,
     required this.animationController,
     required this.completer,
     required this.transitionBuilder,
@@ -44,7 +44,7 @@ class SheetEntry<T> {
     required this.decorationBuilder,
   });
 
-  factory SheetEntry.createNewElement({
+  factory SideSheetEntry.createNewElement({
     required AnimatedWidget Function(Widget child, Animation<double> animation) transitionBuilder,
     required TickerProvider tickerProvider,
     required Duration animationDuration,
@@ -57,7 +57,7 @@ class SheetEntry<T> {
     required int index,
     bool initWithAnimation = true,
   }) {
-    final uniqueId = UniqueKey().toString();
+    final key = UniqueKey();
 
     final animationController = AnimationController(
       vsync: tickerProvider,
@@ -65,18 +65,18 @@ class SheetEntry<T> {
       reverseDuration: reverseDuration,
     );
 
-    final animatedSheet = SlidingAnimationWidget(
-      key: ValueKey(uniqueId),
+    final animatedSheet = AnimatedSideSheet(
+      key: key,
       transitionBuilder: transitionBuilder,
       animationController: animationController,
       initWithAnimation: initWithAnimation,
       child: sheet,
     );
 
-    return SheetEntry<T>(
-      id: uniqueId,
+    return SideSheetEntry<T>(
+      id: key,
       index: index,
-      slidingAnimationWidget: animatedSheet,
+      animatedSideSheet: animatedSheet,
       animationController: animationController,
       completer: completer,
       transitionBuilder: transitionBuilder,
@@ -87,12 +87,12 @@ class SheetEntry<T> {
   }
 
   @override
-  String toString() => id;
+  String toString() => id.toString();
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SheetEntry &&
+      other is SideSheetEntry &&
           runtimeType == other.runtimeType &&
           id == other.id &&
           index == other.index &&

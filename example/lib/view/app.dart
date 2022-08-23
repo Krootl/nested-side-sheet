@@ -3,7 +3,7 @@ import 'package:example/view/theme.dart';
 import 'package:example/view/widget/home_card.dart';
 import 'package:example/view/widget/sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
+import 'package:nested_side_sheet/nested_side_sheet.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -15,7 +15,8 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: Material(
           color: accentColor,
-          child: SheetWidget(
+          // Side sheets will be placed on top of SheetWidget child
+          child: NestedSideSheet(
             child: MyHomePage(title: 'Nested Side Sheet'),
           ),
         ),
@@ -34,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) => HomeCard(
-        shadows: cardShadow,
+        shadows: kElevationToShadow[8],
         child: Scaffold(
           appBar: AppBar(title: Text(widget.title)),
           body: Center(
@@ -108,7 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: child,
         );
 
-    final result = await SheetWidget.of(context).push(
+    final result = await NestedSideSheet.of(context).push(
       Sheet(
         size: Size(376, MediaQuery.of(context).size.height),
         alignment: Alignment.centerLeft,
@@ -126,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ScaffoldMessenger.of(context).clearSnackBars();
     final decorationBuilder = (child) => HomeCard(child: child);
 
-    final result = await SheetWidget.of(context).pushRight(
+    final result = await NestedSideSheet.of(context).pushRight(
       Sheet(
         size: Size(
           MediaQuery.of(context).size.width * (1 / 3),
@@ -158,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: child,
         );
 
-    final result = await SheetWidget.of(context).push(
+    final result = await NestedSideSheet.of(context).push(
       Sheet(
         decorationBuilder: decorationBuilder,
         transitionBuilder: sheetTransition,

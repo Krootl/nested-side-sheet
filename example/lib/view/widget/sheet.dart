@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:krootl_flutter_side_menu/krootl_flutter_sheet.dart';
+import 'package:nested_side_sheet/nested_side_sheet.dart';
 
 class Sheet extends StatefulWidget {
   final Size size;
@@ -7,13 +7,13 @@ class Sheet extends StatefulWidget {
   final int index;
   final Alignment alignment;
 
-  final SheetTransitionBuilder transitionBuilder;
+  final SideSheetTransitionBuilder transitionBuilder;
   final DecorationBuilder? decorationBuilder;
 
   const Sheet({
     super.key,
     required this.size,
-    this.index = 1,
+    this.index = 0,
     required this.alignment,
     required this.transitionBuilder,
     this.decorationBuilder,
@@ -29,7 +29,7 @@ class _SheetState extends State<Sheet> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    showBackButton ??= SheetWidget.of(context).currentSheetIndex(widget) > 1;
+    showBackButton ??= NestedSideSheet.of(context).indexOf(widget) > 0;
   }
 
   @override
@@ -40,26 +40,36 @@ class _SheetState extends State<Sheet> {
           color: Colors.transparent,
           elevation: 4,
           child: Scaffold(
-            appBar: appBar(context) as AppBar,
+            appBar: appBar(context),
             body: Center(child: bodyContent(context)),
           ),
         ),
       );
 
-  Widget appBar(BuildContext context) => AppBar(
+  AppBar appBar(BuildContext context) => AppBar(
+        leadingWidth: 100,
         leading: !(showBackButton!)
             ? const SizedBox.shrink()
-            : TextButton(
-                onPressed: SheetWidget.of(context).pop,
-                child: Text('BACK'),
+            : Padding(
+                padding: const EdgeInsets.all(8),
+                child: TextButton(
+                  onPressed: NestedSideSheet.of(context).pop,
+                  child: Text('BACK'),
+                ),
               ),
-        title: Text('Menu #${widget.index}'),
+        title: Text('Sheet #${widget.index}'),
         actions: [
-          TextButton(
-            onPressed: () => SheetWidget.of(context).close(
-              'The sheets has been closed from the ${widget.index}th one',
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: SizedBox(
+              width: 100 - 16,
+              child: TextButton(
+                onPressed: () => NestedSideSheet.of(context).close(
+                  'The sheets has been closed from the ${widget.index}th one',
+                ),
+                child: Text('CLOSE'),
+              ),
             ),
-            child: Text('CLOSE'),
           ),
         ],
       );
@@ -72,7 +82,7 @@ class _SheetState extends State<Sheet> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: ElevatedButton(
-                  onPressed: () => SheetWidget.of(context).push(
+                  onPressed: () => NestedSideSheet.of(context).push(
                     _sheet,
                     transitionBuilder: widget.transitionBuilder,
                     decorationBuilder: widget.decorationBuilder,
@@ -87,7 +97,7 @@ class _SheetState extends State<Sheet> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: ElevatedButton(
-                  onPressed: () => SheetWidget.of(context).pushReplace(
+                  onPressed: () => NestedSideSheet.of(context).pushReplacement(
                     _sheet,
                     decorationBuilder: widget.decorationBuilder,
                     transitionBuilder: widget.transitionBuilder,
