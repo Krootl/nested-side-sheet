@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(2),
                       child: SvgPicture.asset(
-                        'krootl_logo.svg',
+                        'assets/krootl_logo.svg',
                         height: 28,
                       ),
                     ),
