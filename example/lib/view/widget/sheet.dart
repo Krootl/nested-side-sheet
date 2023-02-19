@@ -2,21 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:nested_side_sheet/nested_side_sheet.dart';
 
 class Sheet extends StatefulWidget {
-  final Size size;
-
   final int index;
-  final Alignment alignment;
-
-  final SideSheetTransitionBuilder transitionBuilder;
-  final DecorationBuilder? decorationBuilder;
+  final Size size;
 
   const Sheet({
     super.key,
-    required this.size,
     this.index = 0,
-    required this.alignment,
-    required this.transitionBuilder,
-    this.decorationBuilder,
+    required this.size,
   });
 
   @override
@@ -36,13 +28,9 @@ class _SheetState extends State<Sheet> {
   Widget build(BuildContext context) => SizedBox(
         width: widget.size.width,
         height: widget.size.height,
-        child: Material(
-          color: Colors.transparent,
-          elevation: 4,
-          child: Scaffold(
-            appBar: appBar(context),
-            body: Center(child: bodyContent(context)),
-          ),
+        child: Scaffold(
+          appBar: appBar(context),
+          body: Center(child: bodyContent(context)),
         ),
       );
 
@@ -65,7 +53,7 @@ class _SheetState extends State<Sheet> {
               width: 100 - 16,
               child: TextButton(
                 onPressed: () => NestedSideSheet.of(context).close(
-                  'The sheets has been closed from the ${widget.index}th one',
+                  'Result: the latest sheet index = ${widget.index}',
                 ),
                 child: Text('CLOSE'),
               ),
@@ -84,9 +72,9 @@ class _SheetState extends State<Sheet> {
                 child: ElevatedButton(
                   onPressed: () => NestedSideSheet.of(context).push(
                     _sheet,
-                    transitionBuilder: widget.transitionBuilder,
-                    decorationBuilder: widget.decorationBuilder,
-                    alignment: widget.alignment,
+                    transitionBuilder: NestedSideSheet.of(context).current.transitionBuilder,
+                    alignment: NestedSideSheet.of(context).current.alignment,
+                    decorationBuilder: NestedSideSheet.of(context).current.decorationBuilder,
                   ),
                   child: Text('PUSH'),
                 ),
@@ -99,9 +87,9 @@ class _SheetState extends State<Sheet> {
                 child: ElevatedButton(
                   onPressed: () => NestedSideSheet.of(context).pushReplacement(
                     _sheet,
-                    decorationBuilder: widget.decorationBuilder,
-                    transitionBuilder: widget.transitionBuilder,
-                    alignment: widget.alignment,
+                    transitionBuilder: NestedSideSheet.of(context).current.transitionBuilder,
+                    alignment: NestedSideSheet.of(context).current.alignment,
+                    decorationBuilder: NestedSideSheet.of(context).current.decorationBuilder,
                   ),
                   child: Text('REPLACE'),
                 ),
@@ -111,11 +99,5 @@ class _SheetState extends State<Sheet> {
         ),
       );
 
-  Widget get _sheet => Sheet(
-        decorationBuilder: widget.decorationBuilder,
-        transitionBuilder: widget.transitionBuilder,
-        size: widget.size,
-        index: widget.index + 1,
-        alignment: widget.alignment,
-      );
+  Widget get _sheet => Sheet(index: widget.index + 1, size: widget.size);
 }

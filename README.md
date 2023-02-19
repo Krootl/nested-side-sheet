@@ -1,39 +1,48 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+## 🕵️ Motivation
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+This repository contains a plugin that enables the display of multiple side sheets on top of each other with the ability to perform typical navigation actions like push, replace, pop and popUntil. We developed this plugin while building a web dashboard app and found that standard material navigation drawers and existing plugins couldn't provide us with the features we needed.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+Our plugin is designed to be simple and flexible, allowing you to customize the look of your side sheets and transition animations without any limitations. With our plugin, you can create a seamless user experience that meets your specific requirements.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## ⚙ Features
+* Display multiple side sheets on top of each other
+* Perform typical navigation actions like `push`, `replace`, `pop` and `popUntil`
+* Customize the look and feel of your side sheets
+* Create seamless transition animations
 
-## Features
+> Check our [web app example](https://nested-side-sheet.web.app)
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
 
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
-```dart
-const like = 'sample';
+## 🔨 Installation
+```yaml
+dependencies:
+     nested_side_sheet: ^1.0.0
 ```
 
-## Additional information
+## 🕹️ Usage
+```dart
+import 'package:nested_side_sheet/nested_side_sheet.dart';
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+...
+
+final result = await NestedSideSheet.of(context).push(
+  Container(
+    color: Colors.white,
+    width: kSideSheetWidth,
+  ),
+  transitionBuilder: leftSideSheetTransition,
+  alignment: Alignment.centerLeft,
+);
+```
+
+> For advanced usage see our [example](https://github.com/Krootl/nested-side-sheet/example).
+
+## 🧑‍💻 Contributors
+We welcome contributions to our plugin! If you'd like to contribute, please fork this repository and create a pull request with your changes. We'll review your changes and merge them into the main branch if they meet our quality standards.
+
+<a href="https://github.com/Krootl/nested-side-sheet/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Krootl/nested-side-sheet" />
+</a>
+
+## License
+Our plugin is open-source and licensed under the MIT License. Feel free to use it in your projects.

@@ -77,6 +77,10 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
   int indexOf(Widget sheet) =>
       _sheetEntries.firstWhereOrNull((e) => e.animatedSideSheet.child == sheet)?.index ?? -1;
 
+  SideSheetEntry get current => _sheetEntries.last;
+
+  SideSheetEntry? get currentOrNull => _sheetEntries.lastOrNull;
+
   @override
   void initState() {
     _scrimAnimationController = AnimationController(
@@ -90,28 +94,6 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
     ).animate(_scrimAnimationController);
     super.initState();
   }
-
-  /// Pre-made function to push the given sheet onto the host from the right side of the screen.
-  Future<T?> pushRight<T extends Object?>(
-    Widget sheet, {
-    bool dismissible = true,
-    DecorationBuilder? decorationBuilder,
-    Duration? animationDuration,
-  }) =>
-      push<T>(
-        sheet,
-        alignment: Alignment.centerRight,
-        transitionBuilder: (child, animation) => SlideTransition(
-          position: animation.drive(
-            Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero),
-          ),
-          child: child,
-        ),
-        decorationBuilder: decorationBuilder,
-        dismissible: dismissible,
-        animationDuration: _scrimAnimationController.duration =
-            animationDuration ?? widget.settleDuration,
-      );
 
   /// Push the given sheet onto the navigation stack.
   Future<T?> push<T extends Object?>(

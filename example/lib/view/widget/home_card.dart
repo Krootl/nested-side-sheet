@@ -16,13 +16,15 @@ class HomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        margin: EdgeInsets.only(top: 48, right: 48),
+        margin: EdgeInsets.only(top: kToolbarHeight, right: kToolbarHeight),
         clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
+        decoration: ShapeDecoration(
           color: backgroundColor,
-          boxShadow: shadows,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(24),
+          shadows: shadows,
+          shape: ContinuousRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(16),
+            ),
           ),
         ),
         child: child,

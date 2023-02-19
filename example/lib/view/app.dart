@@ -3,7 +3,9 @@ import 'package:example/view/theme.dart';
 import 'package:example/view/widget/home_card.dart';
 import 'package:example/view/widget/sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:nested_side_sheet/nested_side_sheet.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -37,137 +39,151 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) => HomeCard(
         shadows: kElevationToShadow[8],
         child: Scaffold(
-          appBar: AppBar(title: Text(widget.title)),
-          body: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          body: Stack(
+            children: [
+              buildInfoCard(),
+              ...buildButtons(),
+            ],
+          ),
+        ),
+      );
+
+  Widget buildInfoCard() => Center(
+        child: Container(
+          width: 300,
+          height: 150,
+          decoration: ShapeDecoration(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: accentColor),
+            ),
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                infoCard(),
-                const SizedBox(height: 32),
-                navigateButtons(),
+                GestureDetector(
+                  onTap: () => launchUrl(Uri.https('krootl.com')),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: SvgPicture.asset(
+                        'krootl_logo.svg',
+                        height: 28,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(widget.title, style: Theme.of(context).appBarTheme.titleTextStyle),
               ],
             ),
           ),
         ),
       );
 
-  Widget infoCard() => Container(
-        width: 300,
-        height: 100,
-        decoration: ShapeDecoration(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: accentColor),
-          ),
-        ),
-        child: Center(
-          child: Text(
-            'Hello World!',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w600,
+  List<Widget> buildButtons() => [
+        Align(
+          alignment: Alignment.center,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 300),
+            child: FloatingActionButton(
+              onPressed: openLeftSheet,
+              child: Icon(Icons.arrow_back_rounded),
             ),
           ),
         ),
-      );
-
-  Widget navigateButtons() => Container(
-        width: 300,
-        height: 300,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FloatingActionButton(
-                  onPressed: onLeftButton,
-                  child: Icon(Icons.arrow_back_rounded),
-                ),
-                FloatingActionButton(
-                  onPressed: onRightButton,
-                  child: Icon(Icons.arrow_forward_rounded),
-                ),
-              ],
+        Align(
+          alignment: Alignment.center,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 150),
+            child: FloatingActionButton(
+              onPressed: openTopSheet,
+              child: Icon(Icons.arrow_upward_rounded),
             ),
-            FloatingActionButton(
-              onPressed: onBottomCustomAnimation,
+          ),
+        ),
+        Align(
+          alignment: Alignment.center,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 300),
+            child: FloatingActionButton(
+              onPressed: openRightSheet,
+              child: Icon(Icons.arrow_forward_rounded),
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.center,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 150),
+            child: FloatingActionButton(
+              onPressed: openBottomSheet,
               child: Icon(Icons.arrow_downward_rounded),
             ),
-          ],
-        ),
-      );
-
-  void onLeftButton() async {
-    ScaffoldMessenger.of(context).clearSnackBars();
-
-    final alignment = Alignment.centerLeft;
-    final transitionBuilder = (child, animation) => SlideTransition(
-          position: animation.drive(
-            Tween<Offset>(begin: const Offset(-1, 0), end: Offset.zero),
           ),
-          child: child,
-        );
+        ),
+      ];
+
+  void openLeftSheet() async {
+    ScaffoldMessenger.of(context).clearSnackBars();
 
     final result = await NestedSideSheet.of(context).push(
       Sheet(
         size: Size(376, MediaQuery.of(context).size.height),
-        alignment: Alignment.centerLeft,
-        transitionBuilder: transitionBuilder,
-        decorationBuilder: (sheet) => sheet,
       ),
-      alignment: alignment,
-      transitionBuilder: transitionBuilder,
-      decorationBuilder: (sheet) => sheet,
+      transitionBuilder: leftSideSheetTransition,
+      alignment: Alignment.centerLeft,
     );
+
     if (result is String) showSnackBar(result);
   }
 
-  void onRightButton() async {
+  void openTopSheet() async {
     ScaffoldMessenger.of(context).clearSnackBars();
-    final decorationBuilder = (child) => HomeCard(child: child);
 
-    final result = await NestedSideSheet.of(context).pushRight(
+    final decorationBuilder = (child) => HomeCard(child: child);
+    final result = await NestedSideSheet.of(context).push(
+      Sheet(
+        size: Size(MediaQuery.of(context).size.width, 400),
+      ),
+      transitionBuilder: topSideSheetTransition,
+      alignment: Alignment.topCenter,
+      decorationBuilder: decorationBuilder,
+    );
+
+    if (result is String) showSnackBar(result);
+  }
+
+  void openRightSheet() async {
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    final decorationBuilder = (child) => HomeCard(child: child);
+    final result = await NestedSideSheet.of(context).push(
       Sheet(
         size: Size(
           MediaQuery.of(context).size.width * (1 / 3),
           MediaQuery.of(context).size.height,
         ),
-        alignment: Alignment.centerRight,
-        decorationBuilder: decorationBuilder,
-        transitionBuilder: (child, animation) => SlideTransition(
-          position: animation.drive(
-            Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero),
-          ),
-          child: child,
-        ),
       ),
+      transitionBuilder: rightSideSheetTransition,
+      alignment: Alignment.centerRight,
       decorationBuilder: decorationBuilder,
       dismissible: true,
     );
+
     if (result is String) showSnackBar(result);
   }
 
-  void onBottomCustomAnimation() async {
+  void openBottomSheet() async {
     ScaffoldMessenger.of(context).clearSnackBars();
-    final decorationBuilder = (child) => HomeCard(child: child);
-
-    final sheetTransition = (child, animation) => SlideTransition(
-          position: animation
-              .drive(CurveTween(curve: Curves.easeOutCubic))
-              .drive(Tween(begin: const Offset(0.0, 1.0), end: Offset.zero)),
-          child: child,
-        );
 
     final result = await NestedSideSheet.of(context).push(
       Sheet(
-        decorationBuilder: decorationBuilder,
-        transitionBuilder: sheetTransition,
         size: Size(MediaQuery.of(context).size.width, 400),
-        alignment: Alignment.bottomCenter,
       ),
-      decorationBuilder: decorationBuilder,
-      transitionBuilder: sheetTransition,
+      transitionBuilder: bottomSideSheetTransition,
       alignment: Alignment.bottomCenter,
     );
 
@@ -177,7 +193,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void showSnackBar(String result) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result, textAlign: TextAlign.center),
-          width: MediaQuery.of(context).size.width / 6,
+          width: 300,
           behavior: SnackBarBehavior.floating,
         ),
       );
