@@ -134,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
         size: Size(376, MediaQuery.of(context).size.height),
       ),
       transitionBuilder: leftSideSheetTransition,
-      alignment: Alignment.centerLeft,
+      alignment: NestedAlignment.left,
     );
 
     if (result is String) showSnackBar(result);
@@ -149,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
         size: Size(MediaQuery.of(context).size.width, 400),
       ),
       transitionBuilder: topSideSheetTransition,
-      alignment: Alignment.topCenter,
+      alignment: NestedAlignment.top,
       decorationBuilder: decorationBuilder,
     );
 
@@ -168,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       transitionBuilder: rightSideSheetTransition,
-      alignment: Alignment.centerRight,
+      alignment: NestedAlignment.right,
       decorationBuilder: decorationBuilder,
       dismissible: true,
     );
@@ -184,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
         size: Size(MediaQuery.of(context).size.width, 400),
       ),
       transitionBuilder: bottomSideSheetTransition,
-      alignment: Alignment.bottomCenter,
+      alignment: NestedAlignment.bottom,
     );
 
     if (result is String) showSnackBar(result);

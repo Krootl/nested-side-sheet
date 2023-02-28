@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:nested_side_sheet/src/side_sheet_host.dart';
 import 'package:nested_side_sheet/src/animated_side_sheet.dart';
+import 'package:nested_side_sheet/src/side_sheet_host.dart';
+import 'package:nested_side_sheet/src/nested_alignment.dart';
 
 class SideSheetEntry<T> {
   /// Unique identifier of the side sheet in the navigation stack.
@@ -24,7 +25,7 @@ class SideSheetEntry<T> {
   final Completer<T?> completer;
 
   /// Controls navigation transition animation alignment.
-  final Alignment alignment;
+  final NestedAlignment alignment;
 
   /// Controls whether the side sheet can be dismissed by clicking outside.
   final bool dismissible;
@@ -51,7 +52,7 @@ class SideSheetEntry<T> {
     required Duration reverseDuration,
     required Widget sheet,
     required Completer<T?> completer,
-    required Alignment alignment,
+    required NestedAlignment alignment,
     required DecorationBuilder? decorationBuilder,
     required bool dismissible,
     required int index,

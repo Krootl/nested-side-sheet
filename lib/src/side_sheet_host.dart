@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:nested_side_sheet/src/side_sheet_data_provider.dart';
 import 'package:nested_side_sheet/src/side_sheet_entry.dart';
+import 'package:nested_side_sheet/src/nested_alignment.dart';
 
 /// Creates an [AnimatedWidget] that is used for side sheet navigation animation.
 typedef SideSheetTransitionBuilder = AnimatedWidget Function(
@@ -83,6 +84,7 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
 
   @override
   void initState() {
+    super.initState();
     _scrimAnimationController = AnimationController(
       vsync: this,
       duration: widget.settleDuration,
@@ -92,20 +94,19 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
       begin: Colors.transparent,
       end: widget.scrimColor,
     ).animate(_scrimAnimationController);
-    super.initState();
   }
 
   /// Push the given sheet onto the navigation stack.
   Future<T?> push<T extends Object?>(
     Widget sheet, {
     required SideSheetTransitionBuilder transitionBuilder,
-    required Alignment alignment,
+    required NestedAlignment alignment,
     DecorationBuilder? decorationBuilder,
     bool dismissible = true,
     Duration? animationDuration,
     Duration? reverseAnimationDuration,
   }) async {
-    if (!mounted) return null;
+    if (!mounted || _blockGestures) return null;
     final completer = Completer<T?>();
 
     final newEntry = SideSheetEntry<T?>.createNewElement(
@@ -121,9 +122,11 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
       reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
     );
     _sheetEntries.add(newEntry);
-
-    _scrimAnimationController.forward();
     _notifyStateChange();
+
+    if (_scrimAnimationController.value == 0) {
+      _scrimAnimationController.forward();
+    }
 
     return completer.future;
   }
@@ -131,10 +134,10 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
   /// Clears all the sheets from the navigation stack.
   /// Topmost widget is closed with animation and its result is returned.
   void close<T extends Object?>([T? result]) async {
+    if (_blockGestures) return;
+
     if (_sheetEntries.isEmpty) {
       throw StateError('No active sheets to close.');
-    } else if (_blockGestures) {
-      return;
     }
 
     // Find the first completer in the navigation stack
@@ -155,10 +158,10 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
   /// Clears the sheets from the navigation stack until 'predicate' function returns true.
   /// The top-most widget is closed with animation and its result is returned.
   void popUntil<T extends Object?>(SheetPredicate predicate, [T? result]) async {
+    if (_blockGestures) return;
+
     if (_sheetEntries.isEmpty) {
       throw StateError('No active sheets to pop.');
-    } else if (_blockGestures) {
-      return;
     }
 
     final lastEntry = _sheetEntries.last;
@@ -202,10 +205,10 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
 
   /// Pop the top-most sheet off the navigation stack.
   void _pop<T extends Object?>([T? result, Completer? completer]) async {
+    if (_blockGestures) return;
+
     if (_sheetEntries.isEmpty) {
       throw StateError('No active sheets to pop.');
-    } else if (_blockGestures) {
-      return;
     }
 
     if (_sheetEntries.isNotEmpty) {
@@ -233,12 +236,14 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
   /// sheet once the new sheet has finished animating in.
   Future<T?> pushReplacement<T extends Object?>(
     Widget sheet, {
-    Alignment? alignment,
+    NestedAlignment? alignment,
     SideSheetTransitionBuilder? transitionBuilder,
     DecorationBuilder? decorationBuilder,
     Duration? animationDuration,
     Duration? reverseAnimationDuration,
   }) async {
+    if (!mounted || _blockGestures) return null;
+
     if (_sheetEntries.isEmpty) {
       throw StateError('No active sheets to replace.');
     }
@@ -266,7 +271,7 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
 
     // Wait for the end of the sheet navigation animation.
     await Future.delayed(_scrimAnimationController.duration!);
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 17));
 
     // Now remove the old sheet entry from the navigation stack.
     if (mounted) {
@@ -314,33 +319,28 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
               onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
               child: Material(
                 color: _scrimColorAnimation.value,
-                child: _scrimAnimationController.value == 0 ? const SizedBox.shrink() : child,
+                child: _scrimAnimationController.value == 0
+                    ? const SizedBox.shrink()
+                    : const SizedBox.expand(),
               ),
             ),
-            child: _sheetWidgetContent(),
           ),
-        ]),
-      );
-
-  Widget _sheetWidgetContent() => ValueListenableBuilder<int>(
-        valueListenable: _sheetStateNotifier,
-        builder: (context, value, child) => Stack(
-          children: _sheetEntries.map((e) {
-            final ignore = e != _sheetEntries.last;
-            final sheet = GestureDetector(
-              onTap: () {},
-              child: Align(
-                alignment: e.alignment,
-                child: IgnorePointer(
+          ValueListenableBuilder<int>(
+            valueListenable: _sheetStateNotifier,
+            builder: (context, value, child) => Stack(
+              children: _sheetEntries.map((entry) {
+                final ignore = entry != _sheetEntries.last;
+                final sheet = IgnorePointer(
                   ignoring: ignore,
-                  child: e.animatedSideSheet,
-                ),
-              ),
-            );
-            return RepaintBoundary(
-              child: e.decorationBuilder?.call(sheet) ?? sheet,
-            );
-          }).toList(),
-        ),
+                  child: entry.animatedSideSheet,
+                );
+                return entry.alignment.positioned(
+                  ValueKey(entry),
+                  entry.decorationBuilder?.call(sheet) ?? sheet,
+                );
+              }).toList(),
+            ),
+          )
+        ]),
       );
 }
