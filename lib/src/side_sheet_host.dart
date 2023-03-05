@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:nested_side_sheet/src/side_sheet_alignment.dart';
 import 'package:nested_side_sheet/src/side_sheet_data_provider.dart';
 import 'package:nested_side_sheet/src/side_sheet_entry.dart';
 
@@ -107,7 +106,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
   Future<T?> push<T extends Object?>(
     Widget sheet, {
     required SideSheetTransitionBuilder transitionBuilder,
-    required SideSheetAlignment alignment,
+    required Alignment alignment,
     DecorationBuilder? decorationBuilder,
     bool dismissible = true,
     Duration? animationDuration,
@@ -248,7 +247,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
   /// sheet once the new sheet has finished animating in.
   Future<T?> pushReplacement<T extends Object?>(
     Widget sheet, {
-    SideSheetAlignment? alignment,
+    Alignment? alignment,
     SideSheetTransitionBuilder? transitionBuilder,
     DecorationBuilder? decorationBuilder,
     Duration? animationDuration,
@@ -346,9 +345,10 @@ class NestedSideSheetState extends State<NestedSideSheet>
                   ignoring: ignore,
                   child: entry.animatedSideSheet,
                 );
-                return entry.alignment.positioned(
-                  ValueKey(entry),
-                  entry.decorationBuilder?.call(sheet) ?? sheet,
+                return Align(
+                  key: ValueKey(entry),
+                  alignment: entry.alignment,
+                  child: entry.decorationBuilder?.call(sheet) ?? sheet,
                 );
               }).toList(),
             ),
