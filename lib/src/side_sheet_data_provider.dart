@@ -11,5 +11,6 @@ class InheritedSheetDataProvider extends InheritedWidget {
   }) : super(key: key, child: child);
 
   @override
-  bool updateShouldNotify(InheritedSheetDataProvider oldWidget) => oldWidget.state != state;
+  bool updateShouldNotify(InheritedSheetDataProvider oldWidget) =>
+      oldWidget.state != state;
 }

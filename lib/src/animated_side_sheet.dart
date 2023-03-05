@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nested_side_sheet/src/side_sheet_host.dart';
-import 'package:nested_side_sheet/src/utils/measure_size.dart';
 
 class AnimatedSideSheet extends StatefulWidget {
   /// Highlight of the program - the content of the side sheet.
@@ -29,18 +28,16 @@ class AnimatedSideSheet extends StatefulWidget {
 
 class _AnimatedSideSheetState extends State<AnimatedSideSheet>
     with TickerProviderStateMixin {
-  late ValueNotifier<Size?> sheetSizeNotifier;
-
   late final AnimationController animationController;
   late Animation<double> animation;
 
   @override
   void initState() {
-    sheetSizeNotifier = ValueNotifier(null);
+    super.initState();
+
     animationController = widget.animationController;
     animation = ProxyAnimation(animationController);
-
-    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => animate());
   }
 
   void animate() async {
@@ -54,22 +51,8 @@ class _AnimatedSideSheetState extends State<AnimatedSideSheet>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: animation,
-        builder: (context, child) => widget.transitionBuilder(child!, animation),
-        child: MeasureSize(
-          onChange: (size) {
-            sheetSizeNotifier.value ??= size;
-            animate();
-          },
-          child: RepaintBoundary(
-            child: ValueListenableBuilder<Size?>(
-              valueListenable: sheetSizeNotifier,
-              builder: (context, size, child) => SizedBox.fromSize(
-                size: size,
-                child: child,
-              ),
-              child: RepaintBoundary(child: widget.child),
-            ),
-          ),
-        ),
+        builder: (context, child) =>
+            widget.transitionBuilder(child!, animation),
+        child: widget.child,
       );
 }

@@ -72,9 +72,11 @@ class _SheetState extends State<Sheet> {
                 child: ElevatedButton(
                   onPressed: () => NestedSideSheet.of(context).push(
                     _sheet,
-                    transitionBuilder: NestedSideSheet.of(context).current.transitionBuilder,
+                    transitionBuilder:
+                        NestedSideSheet.of(context).current.transitionBuilder,
                     alignment: NestedSideSheet.of(context).current.alignment,
-                    decorationBuilder: NestedSideSheet.of(context).current.decorationBuilder,
+                    decorationBuilder:
+                        NestedSideSheet.of(context).current.decorationBuilder,
                   ),
                   child: Text('PUSH'),
                 ),
@@ -87,9 +89,11 @@ class _SheetState extends State<Sheet> {
                 child: ElevatedButton(
                   onPressed: () => NestedSideSheet.of(context).pushReplacement(
                     _sheet,
-                    transitionBuilder: NestedSideSheet.of(context).current.transitionBuilder,
+                    transitionBuilder:
+                        NestedSideSheet.of(context).current.transitionBuilder,
                     alignment: NestedSideSheet.of(context).current.alignment,
-                    decorationBuilder: NestedSideSheet.of(context).current.decorationBuilder,
+                    decorationBuilder:
+                        NestedSideSheet.of(context).current.decorationBuilder,
                   ),
                   child: Text('REPLACE'),
                 ),
