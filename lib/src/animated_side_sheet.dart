@@ -51,7 +51,8 @@ class _AnimatedSideSheetState extends State<AnimatedSideSheet>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: animation,
-        builder: (context, child) => widget.transitionBuilder(child!, animation),
+        builder: (context, child) =>
+            widget.transitionBuilder(child!, animation),
         child: widget.child,
       );
 }

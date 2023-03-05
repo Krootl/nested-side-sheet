@@ -10,7 +10,7 @@ Our plugin is designed to be simple and flexible, allowing you to customize the 
 * Customize the look and feel of your side sheets
 * Create seamless transition animations
 
-> Check our [web app example](https://nested-side-sheet.web.app)
+Check our [web app example](https://nested-side-sheet.web.app)
 
 
 ## 🔨 Installation
@@ -35,14 +35,14 @@ final result = await NestedSideSheet.of(context).push(
 );
 ```
 
-> For advanced usage see our [example](https://github.com/Krootl/nested-side-sheet/example).
+For advanced usage see our [example](https://github.com/Krootl/nested-side-sheet/tree/master/example).
 
 ## 🧑‍💻 Contributors
-We welcome contributions to our plugin! If you'd like to contribute, please fork this repository and create a pull request with your changes. We'll review your changes and merge them into the main branch if they meet our quality standards.
-
 <a href="https://github.com/Krootl/nested-side-sheet/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Krootl/nested-side-sheet" />
 </a>
+
+We welcome contributions to our plugin! If you'd like to contribute, please fork this repository and create a pull request with your changes. We'll review your changes and merge them into the main branch if they meet our quality standards.
 
 ## License
 Our plugin is open-source and licensed under the MIT License. Feel free to use it in your projects.

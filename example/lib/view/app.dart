@@ -76,7 +76,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(widget.title, style: Theme.of(context).appBarTheme.titleTextStyle),
+                Text(
+                  widget.title,
+                  style: Theme.of(context).appBarTheme.titleTextStyle,
+                ),
               ],
             ),
           ),
@@ -134,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
         size: Size(376, MediaQuery.of(context).size.height),
       ),
       transitionBuilder: leftSideSheetTransition,
-      alignment: NestedAlignment.left,
+      alignment: SideSheetAlignment.left,
     );
 
     if (result is String) showSnackBar(result);
@@ -149,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
         size: Size(MediaQuery.of(context).size.width, 400),
       ),
       transitionBuilder: topSideSheetTransition,
-      alignment: NestedAlignment.top,
+      alignment: SideSheetAlignment.top,
       decorationBuilder: decorationBuilder,
     );
 
@@ -168,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       transitionBuilder: rightSideSheetTransition,
-      alignment: NestedAlignment.right,
+      alignment: SideSheetAlignment.right,
       decorationBuilder: decorationBuilder,
       dismissible: true,
     );
@@ -184,13 +187,14 @@ class _MyHomePageState extends State<MyHomePage> {
         size: Size(MediaQuery.of(context).size.width, 400),
       ),
       transitionBuilder: bottomSideSheetTransition,
-      alignment: NestedAlignment.bottom,
+      alignment: SideSheetAlignment.bottom,
     );
 
     if (result is String) showSnackBar(result);
   }
 
-  void showSnackBar(String result) => ScaffoldMessenger.of(context).showSnackBar(
+  void showSnackBar(String result) =>
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result, textAlign: TextAlign.center),
           width: 300,

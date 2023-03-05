@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nested_side_sheet/src/animated_side_sheet.dart';
 import 'package:nested_side_sheet/src/side_sheet_host.dart';
-import 'package:nested_side_sheet/src/nested_alignment.dart';
+import 'package:nested_side_sheet/src/side_sheet_alignment.dart';
 
 class SideSheetEntry<T> {
   /// Unique identifier of the side sheet in the navigation stack.
@@ -24,8 +24,8 @@ class SideSheetEntry<T> {
   /// Unique completer for getting navigation result.
   final Completer<T?> completer;
 
-  /// Controls navigation transition animation alignment.
-  final NestedAlignment alignment;
+  /// Controls the side sheet alignment.
+  final SideSheetAlignment alignment;
 
   /// Controls whether the side sheet can be dismissed by clicking outside.
   final bool dismissible;
@@ -46,13 +46,14 @@ class SideSheetEntry<T> {
   });
 
   factory SideSheetEntry.createNewElement({
-    required AnimatedWidget Function(Widget child, Animation<double> animation) transitionBuilder,
+    required AnimatedWidget Function(Widget child, Animation<double> animation)
+        transitionBuilder,
     required TickerProvider tickerProvider,
     required Duration animationDuration,
     required Duration reverseDuration,
     required Widget sheet,
     required Completer<T?> completer,
-    required NestedAlignment alignment,
+    required SideSheetAlignment alignment,
     required DecorationBuilder? decorationBuilder,
     required bool dismissible,
     required int index,

@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-enum NestedAlignment {
+enum SideSheetAlignment {
   left,
   top,
   bottom,
@@ -8,13 +8,13 @@ enum NestedAlignment {
 
   Widget positioned(Key key, Widget child) {
     switch (this) {
-      case NestedAlignment.left:
+      case SideSheetAlignment.left:
         return Positioned(key: key, left: 0, top: 0, bottom: 0, child: child);
-      case NestedAlignment.right:
+      case SideSheetAlignment.right:
         return Positioned(key: key, right: 0, top: 0, bottom: 0, child: child);
-      case NestedAlignment.top:
+      case SideSheetAlignment.top:
         return Positioned(key: key, left: 0, top: 0, right: 0, child: child);
-      case NestedAlignment.bottom:
+      case SideSheetAlignment.bottom:
         return Positioned(key: key, left: 0, bottom: 0, right: 0, child: child);
     }
   }
