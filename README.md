@@ -29,9 +29,10 @@ dependencies:
 ## 🕹️ Usage
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:nested_side_sheet/nested_side_sheet.dart';
 
-...
+const kSideSheetWidth = 304.0;
 
 void main() {
   runApp(const MyApp());
@@ -50,20 +51,30 @@ class MyApp extends StatelessWidget {
       );
 }
 
-...
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
 
-// Call this anywhere in the app within the NestedSideSheet context
-final result = await
-NestedSideSheet.of
-(
-context).push(
-Container(
-color: Colors.white,
-width: kSideSheetWidth,
-),
-transitionBuilder: leftSideSheetTransition,
-position: SideSheetPosition.left,
-);
+  @override
+  Widget build(BuildContext context) =>
+      Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () async {
+              // Call this anywhere in the app within the NestedSideSheet context
+              final result = await NestedSideSheet.of(context).push(
+                Container(
+                  color: Colors.white,
+                  width: kSideSheetWidth,
+                ),
+                transitionBuilder: leftSideSheetTransition,
+                position: SideSheetPosition.left,
+              );
+            },
+            icon: Icon(Icons.add),
+          ),
+        ),
+      );
+}
 ```
 
 For advanced usage see
