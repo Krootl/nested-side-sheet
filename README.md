@@ -23,7 +23,7 @@ Check our [web app example](https://nested-side-sheet.web.app)
 
 ```yaml
 dependencies:
-  nested_side_sheet: ^1.1.1
+  nested_side_sheet: ^1.1.0
 ```
 
 ## 🕹️ Usage

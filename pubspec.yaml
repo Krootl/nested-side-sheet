@@ -1,6 +1,6 @@
 name: nested_side_sheet
 description: Flutter package which enables the display of multiple side sheets on top of each other with the ability to perform typical navigation actions like push, replace, pop and popUntil.
-version: 1.1.1
+version: 1.1.2
 repository: https://github.com/Krootl/nested-side-sheet
 
 environment:
