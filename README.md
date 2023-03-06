@@ -1,7 +1,8 @@
 ## 🕵️ Motivation
 
 This repository contains a plugin that enables the display of multiple side sheets on top of each
-other with the ability to perform typical navigation actions like push, replace, pop and popUntil.
+other with the ability to perform typical navigation actions like `push`, `replace`, `pop`
+and `popUntil`.
 We developed this plugin while building a web dashboard app and found that standard material
 navigation drawers and existing plugins couldn't provide us with the features we needed.
 
@@ -22,7 +23,7 @@ Check our [web app example](https://nested-side-sheet.web.app)
 
 ```yaml
 dependencies:
-  nested_side_sheet: ^1.1.0
+  nested_side_sheet: ^1.1.1
 ```
 
 ## 🕹️ Usage
