@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:nested_side_sheet/src/side_sheet_alignment.dart';
 import 'package:nested_side_sheet/src/side_sheet_data_provider.dart';
 import 'package:nested_side_sheet/src/side_sheet_entry.dart';
+import 'package:nested_side_sheet/src/side_sheet_position.dart';
 
 /// Creates an [AnimatedWidget] that is used for side sheet navigation animation.
 typedef SideSheetTransitionBuilder = AnimatedWidget Function(
@@ -107,7 +107,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
   Future<T?> push<T extends Object?>(
     Widget sheet, {
     required SideSheetTransitionBuilder transitionBuilder,
-    required SideSheetAlignment alignment,
+    required SideSheetPosition position,
     DecorationBuilder? decorationBuilder,
     bool dismissible = true,
     Duration? animationDuration,
@@ -123,7 +123,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
       sheet: sheet,
       completer: completer,
       decorationBuilder: decorationBuilder ?? widget.decorationBuilder,
-      alignment: alignment,
+      position: position,
       dismissible: dismissible,
       animationDuration: _setSettleDuration(animationDuration),
       reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
@@ -248,7 +248,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
   /// sheet once the new sheet has finished animating in.
   Future<T?> pushReplacement<T extends Object?>(
     Widget sheet, {
-    SideSheetAlignment? alignment,
+    SideSheetPosition? position,
     SideSheetTransitionBuilder? transitionBuilder,
     DecorationBuilder? decorationBuilder,
     Duration? animationDuration,
@@ -270,7 +270,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
       sheet: sheet,
       completer: oldCompleter,
       transitionBuilder: transitionBuilder ?? oldEntry.transitionBuilder,
-      alignment: alignment ?? oldEntry.alignment,
+      position: position ?? oldEntry.position,
       dismissible: oldEntry.dismissible,
       animationDuration: _setSettleDuration(animationDuration),
       reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
@@ -346,7 +346,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
                   ignoring: ignore,
                   child: entry.animatedSideSheet,
                 );
-                return entry.alignment.positioned(
+                return entry.position.positioned(
                   ValueKey(entry),
                   entry.decorationBuilder?.call(sheet) ?? sheet,
                 );

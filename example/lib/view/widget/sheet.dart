@@ -74,7 +74,7 @@ class _SheetState extends State<Sheet> {
                     _sheet,
                     transitionBuilder:
                         NestedSideSheet.of(context).current.transitionBuilder,
-                    alignment: NestedSideSheet.of(context).current.alignment,
+                    position: NestedSideSheet.of(context).current.position,
                     decorationBuilder:
                         NestedSideSheet.of(context).current.decorationBuilder,
                   ),
@@ -91,7 +91,7 @@ class _SheetState extends State<Sheet> {
                     _sheet,
                     transitionBuilder:
                         NestedSideSheet.of(context).current.transitionBuilder,
-                    alignment: NestedSideSheet.of(context).current.alignment,
+                    position: NestedSideSheet.of(context).current.position,
                     decorationBuilder:
                         NestedSideSheet.of(context).current.decorationBuilder,
                   ),

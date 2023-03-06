@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nested_side_sheet/src/animated_side_sheet.dart';
 import 'package:nested_side_sheet/src/side_sheet_host.dart';
-import 'package:nested_side_sheet/src/side_sheet_alignment.dart';
+import 'package:nested_side_sheet/src/side_sheet_position.dart';
 
 class SideSheetEntry<T> {
   /// Unique identifier of the side sheet in the navigation stack.
@@ -24,8 +24,8 @@ class SideSheetEntry<T> {
   /// Unique completer for getting navigation result.
   final Completer<T?> completer;
 
-  /// Controls the side sheet alignment.
-  final SideSheetAlignment alignment;
+  /// Controls the side sheet position.
+  final SideSheetPosition position;
 
   /// Controls whether the side sheet can be dismissed by clicking outside.
   final bool dismissible;
@@ -40,7 +40,7 @@ class SideSheetEntry<T> {
     required this.animationController,
     required this.completer,
     required this.transitionBuilder,
-    required this.alignment,
+    required this.position,
     required this.dismissible,
     required this.decorationBuilder,
   });
@@ -53,7 +53,7 @@ class SideSheetEntry<T> {
     required Duration reverseDuration,
     required Widget sheet,
     required Completer<T?> completer,
-    required SideSheetAlignment alignment,
+    required SideSheetPosition position,
     required DecorationBuilder? decorationBuilder,
     required bool dismissible,
     required int index,
@@ -82,7 +82,7 @@ class SideSheetEntry<T> {
       animationController: animationController,
       completer: completer,
       transitionBuilder: transitionBuilder,
-      alignment: alignment,
+      position: position,
       dismissible: dismissible,
       decorationBuilder: decorationBuilder,
     );
@@ -98,8 +98,8 @@ class SideSheetEntry<T> {
           runtimeType == other.runtimeType &&
           id == other.id &&
           index == other.index &&
-          alignment == other.alignment;
+          position == other.position;
 
   @override
-  int get hashCode => id.hashCode ^ index.hashCode ^ alignment.hashCode;
+  int get hashCode => id.hashCode ^ index.hashCode ^ position.hashCode;
 }
