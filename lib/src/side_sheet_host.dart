@@ -47,7 +47,9 @@ class NestedSideSheet extends StatefulWidget {
   final DecorationBuilder? decorationBuilder;
 
   static NestedSideSheetState of(BuildContext context) {
-    final state = context.dependOnInheritedWidgetOfExactType<InheritedSheetDataProvider>()?.state;
+    final state = context
+        .dependOnInheritedWidgetOfExactType<InheritedSheetDataProvider>()
+        ?.state;
     if (state != null) {
       return state;
     } else {
@@ -59,9 +61,11 @@ class NestedSideSheet extends StatefulWidget {
   State<NestedSideSheet> createState() => NestedSideSheetState();
 }
 
-class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderStateMixin {
+class NestedSideSheetState extends State<NestedSideSheet>
+    with TickerProviderStateMixin {
   /// Prevent unnecessary gestures while animation is active.
-  bool get _blockGestures => _sheetEntries.any((e) => e.animationController.isAnimating);
+  bool get _blockGestures =>
+      _sheetEntries.any((e) => e.animationController.isAnimating);
 
   /// The color of the scrim that is applied when the side sheet is open.
   late AnimationController _scrimAnimationController;
@@ -76,7 +80,10 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
   void _notifyStateChange() => _sheetStateNotifier.value += 1;
 
   int indexOf(Widget sheet) =>
-      _sheetEntries.firstWhereOrNull((e) => e.animatedSideSheet.child == sheet)?.index ?? -1;
+      _sheetEntries
+          .firstWhereOrNull((e) => e.animatedSideSheet.child == sheet)
+          ?.index ??
+      -1;
 
   SideSheetEntry get current => _sheetEntries.last;
 
@@ -291,8 +298,8 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
   Future<void> _maybeRemoveOverlay() async {
     if (_sheetEntries.isEmpty) {
       _scrimAnimationController.reverse();
-      await Future.delayed(
-          _scrimAnimationController.reverseDuration ?? widget.reverseSettleDuration);
+      await Future.delayed(_scrimAnimationController.reverseDuration ??
+          widget.reverseSettleDuration);
 
       _notifyStateChange();
       _setSettleDuration(null);
@@ -304,7 +311,8 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
       _scrimAnimationController.duration = duration ?? widget.settleDuration;
 
   Duration _setReverseSettleDuration(Duration? duration) =>
-      _scrimAnimationController.reverseDuration = duration ?? widget.reverseSettleDuration;
+      _scrimAnimationController.reverseDuration =
+          duration ?? widget.reverseSettleDuration;
 
   /// Remove sheet entry from the navigation stack while disposing its animation controller.
   void _removeSheetSilently(SideSheetEntry entry) {
@@ -313,7 +321,8 @@ class NestedSideSheetState extends State<NestedSideSheet> with TickerProviderSta
   }
 
   /// The callback, when a user taps on the outer space
-  void _onDismiss() => _sheetEntries.any((e) => !e.dismissible) ? null : close();
+  void _onDismiss() =>
+      _sheetEntries.any((e) => !e.dismissible) ? null : close();
 
   @override
   Widget build(BuildContext context) => InheritedSheetDataProvider(
