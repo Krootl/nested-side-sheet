@@ -320,6 +320,10 @@ class NestedSideSheetState extends State<NestedSideSheet>
     _sheetEntries.removeWhere((e) => e == entry);
   }
 
+  /// The callback, when a user taps on the outer space
+  void _onDismiss() =>
+      _sheetEntries.any((e) => !e.dismissible) ? null : close();
+
   @override
   Widget build(BuildContext context) => InheritedSheetDataProvider(
         state: this,
@@ -328,7 +332,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
           AnimatedBuilder(
             animation: _scrimColorAnimation,
             builder: (ctx, child) => GestureDetector(
-              onTap: _sheetEntries.any((e) => !e.dismissible) ? null : close,
+              onTap: _onDismiss,
               child: Material(
                 color: _scrimColorAnimation.value,
                 child: _scrimAnimationController.value == 0
@@ -348,7 +352,10 @@ class NestedSideSheetState extends State<NestedSideSheet>
                 );
                 return entry.position.positioned(
                   ValueKey(entry),
-                  entry.decorationBuilder?.call(sheet) ?? sheet,
+                  GestureDetector(
+                    onTap: _onDismiss,
+                    child: entry.decorationBuilder?.call(sheet) ?? sheet,
+                  ),
                 );
               }).toList(),
             ),
