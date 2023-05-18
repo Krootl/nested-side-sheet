@@ -1,3 +1,7 @@
+## 1.1.3
+
+* Improved the logic of dismissing the sheets, when a user taps on the outer space.
+
 ## 1.1.1 - 1.1.2
 
 * README fixes.
