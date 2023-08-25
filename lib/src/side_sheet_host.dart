@@ -112,6 +112,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
     bool dismissible = true,
     Duration? animationDuration,
     Duration? reverseAnimationDuration,
+    Function? dismissCallback,
   }) async {
     if (!mounted || _blockGestures) return null;
     final completer = Completer<T?>();
@@ -127,6 +128,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
       dismissible: dismissible,
       animationDuration: _setSettleDuration(animationDuration),
       reverseDuration: _setReverseSettleDuration(reverseAnimationDuration),
+      dismissCB: dismissCallback,
     );
     _sheetEntries.add(newEntry);
     _notifyStateChange();
@@ -155,6 +157,7 @@ class NestedSideSheetState extends State<NestedSideSheet>
       if (_sheetEntries.last != entry) {
         _removeSheetSilently(entry);
       }
+      entry.dismissCallback?.call();
     }
 
     _notifyStateChange();

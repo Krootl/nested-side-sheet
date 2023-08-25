@@ -33,6 +33,8 @@ class SideSheetEntry<T> {
   /// A decoration widget builder which helps creating custom design.
   final DecorationBuilder? decorationBuilder;
 
+  final Function? dismissCallback;
+
   SideSheetEntry({
     required this.id,
     required this.index,
@@ -43,6 +45,7 @@ class SideSheetEntry<T> {
     required this.position,
     required this.dismissible,
     required this.decorationBuilder,
+    this.dismissCallback,
   });
 
   factory SideSheetEntry.createNewElement({
@@ -58,6 +61,7 @@ class SideSheetEntry<T> {
     required bool dismissible,
     required int index,
     bool initWithAnimation = true,
+    Function? dismissCB,
   }) {
     final key = UniqueKey();
 
@@ -85,6 +89,7 @@ class SideSheetEntry<T> {
       position: position,
       dismissible: dismissible,
       decorationBuilder: decorationBuilder,
+      dismissCallback: dismissCB,
     );
   }
 
